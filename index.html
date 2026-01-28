@@ -1,48 +1,124 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Self-driving Car - Neural Evolution</title>
+    <title>Neural Drive Lab | Self-Driving Car</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app-container">
-        <canvas id="carCanvas"></canvas>
-        
-        <div id="controlPanel">
-            <h2>🚗 Neural Drive</h2>
-            
-            <div class="stat-item">
-                <div class="stat-label">Generation</div>
-                <div class="stat-value" id="generation">1</div>
+    <main class="app-shell">
+        <section id="controlPanel" class="panel" aria-label="Painel de controle">
+            <div class="panel-header">
+                <span class="eyebrow">Autonomous Lab</span>
+                <h1>Neural Drive</h1>
+                <p class="panel-subtitle">Simulação evolutiva em tempo real.</p>
+                <div class="chip-row">
+                    <span class="chip">Neuroevolution</span>
+                    <span class="chip">Canvas 2D</span>
+                </div>
             </div>
-            
-            <div class="stat-item">
-                <div class="stat-label">Population</div>
-                <div class="stat-value" id="population">100</div>
+
+            <div class="stats-grid" aria-live="polite">
+                <div class="stat-item">
+                    <span class="stat-label">Geração</span>
+                    <span class="stat-value" id="generation">1</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-label">População</span>
+                    <span class="stat-value" id="population">100</span>
+                </div>
+
+                <div class="stat-item emphasis">
+                    <span class="stat-label">Melhor distância</span>
+                    <div class="stat-inline">
+                        <span class="stat-value" id="bestDistance">0</span>
+                        <span class="stat-unit">m</span>
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-label">Carros ativos</span>
+                    <span class="stat-value" id="aliveCars">100</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-label">FPS</span>
+                    <span class="stat-value" id="fps">60</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-label">Velocidade</span>
+                    <span class="stat-value" id="simSpeed">1x</span>
+                </div>
             </div>
-            
-            <div class="stat-item">
-                <div class="stat-label">Best Distance</div>
-                <div class="stat-value" id="bestDistance">0</div>
-                <span class="info-badge">meters</span>
+
+            <div class="controls-group">
+                <div class="control-row toggles">
+                    <label class="toggle">
+                        <input type="checkbox" id="toggleSensors" checked>
+                        <span>Mostrar sensores</span>
+                    </label>
+                    <label class="toggle">
+                        <input type="checkbox" id="toggleGhosts" checked>
+                        <span>Mostrar frota</span>
+                    </label>
+                    <label class="toggle">
+                        <input type="checkbox" id="toggleNetwork" checked>
+                        <span>Mostrar rede</span>
+                    </label>
+                </div>
+
+                <div class="control-row">
+                    <label for="speedSelect">Ritmo da simulação</label>
+                    <div class="select">
+                        <select id="speedSelect">
+                            <option value="1" selected>1x (Real)</option>
+                            <option value="2">2x</option>
+                            <option value="4">4x</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            
-            <div class="stat-item">
-                <div class="stat-label">Alive Cars</div>
-                <div class="stat-value" id="aliveCars">100</div>
-            </div>
-            
+
             <div class="button-group">
-                <button class="primary" onclick="save()">💾 Save Best Brain</button>
-                <button class="secondary" onclick="resetGeneration()">🔄 Reset Generation</button>
-                <button class="danger" onclick="discard()">🗑️ Delete Saved</button>
+                <button class="primary" id="saveBrain" type="button">Salvar melhor cérebro</button>
+                <button class="secondary" id="resetGeneration" type="button">Nova geração</button>
+                <button class="ghost" id="pauseResume" type="button">Pausar</button>
+                <button class="danger" id="discardBrain" type="button">Excluir salvo</button>
             </div>
-        </div>
-        
-        <canvas id="networkCanvas"></canvas>
-    </div>
+
+            <div class="panel-footer">
+                <span class="status-dot" id="statusDot" data-state="running"></span>
+                <span id="simStatus">Simulação ativa</span>
+            </div>
+        </section>
+
+        <section class="canvas-card" data-surface="road">
+            <div class="canvas-header">
+                <div>
+                    <p class="canvas-title">Road View</p>
+                    <p class="canvas-subtitle">Foco no melhor carro</p>
+                </div>
+                <span class="badge" id="roadBadge">Live</span>
+            </div>
+            <canvas id="carCanvas" aria-label="Simulação da pista"></canvas>
+        </section>
+
+        <section class="canvas-card" data-surface="network">
+            <div class="canvas-header">
+                <div>
+                    <p class="canvas-title">Neural Map</p>
+                    <p class="canvas-subtitle">Pesos e ativações</p>
+                </div>
+                <span class="badge" id="networkBadge">Live</span>
+            </div>
+            <canvas id="networkCanvas" aria-label="Visualização da rede neural"></canvas>
+        </section>
+    </main>
     
     <script src="visualizer.js"></script>
     <script src="network.js"></script>

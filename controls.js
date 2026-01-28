@@ -1,52 +1,42 @@
-class Controls{
-    constructor(type){
-        this.forward=false;
-        this.left=false;
-        this.right=false;
-        this.reverse=false;
+class Controls {
+    constructor(type) {
+        this.forward = false;
+        this.left = false;
+        this.right = false;
+        this.reverse = false;
 
-        switch(type){
+        switch (type) {
             case "KEYS":
                 this.#addKeyboardListeners();
                 break;
             case "DUMMY":
-                this.forward=true;
+                this.forward = true;
                 break;
         }
     }
 
-    #addKeyboardListeners(){
-        document.onkeydown=(event)=>{
-            switch(event.key){
+    #addKeyboardListeners() {
+        const updateKey = (event, isDown) => {
+            switch (event.key) {
                 case "ArrowLeft":
-                    this.left=true;
+                    this.left = isDown;
                     break;
                 case "ArrowRight":
-                    this.right=true;
+                    this.right = isDown;
                     break;
                 case "ArrowUp":
-                    this.forward=true;
+                    this.forward = isDown;
                     break;
                 case "ArrowDown":
-                    this.reverse=true;
+                    this.reverse = isDown;
                     break;
+                default:
+                    return;
             }
-        }
-        document.onkeyup=(event)=>{
-            switch(event.key){
-                case "ArrowLeft":
-                    this.left=false;
-                    break;
-                case "ArrowRight":
-                    this.right=false;
-                    break;
-                case "ArrowUp":
-                    this.forward=false;
-                    break;
-                case "ArrowDown":
-                    this.reverse=false;
-                    break;
-            }
-        }
+            event.preventDefault();
+        };
+
+        window.addEventListener("keydown", (event) => updateKey(event, true));
+        window.addEventListener("keyup", (event) => updateKey(event, false));
     }
 }

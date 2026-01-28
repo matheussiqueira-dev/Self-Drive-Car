@@ -3,8 +3,11 @@ class Visualizer{
         const margin=50;
         const left=margin;
         const top=margin;
-        const width=ctx.canvas.width-margin*2;
-        const height=ctx.canvas.height-margin*2;
+        const dpr=window.devicePixelRatio||1;
+        const canvasWidth=ctx.canvas.width/dpr;
+        const canvasHeight=ctx.canvas.height/dpr;
+        const width=canvasWidth-margin*2;
+        const height=canvasHeight-margin*2;
 
         const levelHeight=height/network.levels.length;
 
@@ -90,7 +93,7 @@ class Visualizer{
                 ctx.textBaseline="middle";
                 ctx.fillStyle="black";
                 ctx.strokeStyle="white";
-                ctx.font=(nodeRadius*1.5)+"px Arial";
+                ctx.font=(nodeRadius*1.5)+"px 'Space Grotesk', 'Segoe UI', sans-serif";
                 ctx.fillText(outputLabels[i],x,top+nodeRadius*0.1);
                 ctx.lineWidth=0.5;
                 ctx.strokeText(outputLabels[i],x,top+nodeRadius*0.1);

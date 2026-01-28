@@ -1,111 +1,386 @@
 const carCanvas = document.getElementById("carCanvas");
-carCanvas.width = 200;
 const networkCanvas = document.getElementById("networkCanvas");
-networkCanvas.width = 300;
 
 const carCtx = carCanvas.getContext("2d");
 const networkCtx = networkCanvas.getContext("2d");
-const road = new Road(carCanvas.width / 2, carCanvas.width * 0.9);
 
-const N = 100;
-const cars = generateCars(N);
-let bestCar = cars[0];
-if (localStorage.getItem("bestBrain")) {
+const CONFIG = {
+    population: 100,
+    trafficCount: 50,
+    laneCount: 3,
+    mutationRate: 0.1,
+    carWidth: 30,
+    carHeight: 50
+};
+
+const COLORS = {
+    best: "#39c6f4",
+    ghost: "#94b8d6",
+    traffic: "#ff6b6b"
+};
+
+const BEST_BRAIN_KEY = "bestBrain";
+
+const ui = {
+    generation: document.getElementById("generation"),
+    population: document.getElementById("population"),
+    bestDistance: document.getElementById("bestDistance"),
+    aliveCars: document.getElementById("aliveCars"),
+    fps: document.getElementById("fps"),
+    simSpeed: document.getElementById("simSpeed"),
+    simStatus: document.getElementById("simStatus"),
+    statusDot: document.getElementById("statusDot"),
+    roadBadge: document.getElementById("roadBadge"),
+    networkBadge: document.getElementById("networkBadge"),
+    saveBrain: document.getElementById("saveBrain"),
+    resetGeneration: document.getElementById("resetGeneration"),
+    discardBrain: document.getElementById("discardBrain"),
+    pauseResume: document.getElementById("pauseResume"),
+    toggleSensors: document.getElementById("toggleSensors"),
+    toggleGhosts: document.getElementById("toggleGhosts"),
+    toggleNetwork: document.getElementById("toggleNetwork"),
+    speedSelect: document.getElementById("speedSelect")
+};
+
+const sim = {
+    speedSteps: 1,
+    showSensors: true,
+    showGhosts: true,
+    showNetwork: true,
+    paused: false
+};
+
+let carCanvasSize = { width: 0, height: 0 };
+let networkCanvasSize = { width: 0, height: 0 };
+let road = null;
+let cars = [];
+let traffic = [];
+let bestCar = null;
+let generation = 1;
+let lastFrameTime = performance.now();
+let smoothedFps = 60;
+let lastFpsUpdate = 0;
+let savedBrain = null;
+
+init();
+
+function init() {
+    bindUI();
+    resizeCanvases();
+
+    cars = generateCars(CONFIG.population);
+    bestCar = cars[0];
+
+    savedBrain = loadSavedBrain();
+    applySavedBrain();
+
+    traffic = generateTraffic(CONFIG.trafficCount);
+
+    updateText(ui.population, CONFIG.population);
+    updateText(ui.generation, generation);
+    updateSimSpeed(sim.speedSteps);
+    updateStatusBadges();
+
+    requestAnimationFrame(animate);
+}
+
+function bindUI() {
+    if (ui.saveBrain) ui.saveBrain.addEventListener("click", save);
+    if (ui.discardBrain) ui.discardBrain.addEventListener("click", discard);
+    if (ui.resetGeneration) ui.resetGeneration.addEventListener("click", resetGeneration);
+    if (ui.pauseResume) ui.pauseResume.addEventListener("click", togglePause);
+
+    if (ui.toggleSensors) {
+        ui.toggleSensors.addEventListener("change", (event) => {
+            sim.showSensors = event.target.checked;
+        });
+    }
+
+    if (ui.toggleGhosts) {
+        ui.toggleGhosts.addEventListener("change", (event) => {
+            sim.showGhosts = event.target.checked;
+        });
+    }
+
+    if (ui.toggleNetwork) {
+        ui.toggleNetwork.addEventListener("change", (event) => {
+            sim.showNetwork = event.target.checked;
+            updateStatusBadges();
+        });
+    }
+
+    if (ui.speedSelect) {
+        ui.speedSelect.addEventListener("change", (event) => {
+            updateSimSpeed(Number(event.target.value));
+        });
+    }
+
+    window.addEventListener("resize", resizeCanvases);
+}
+
+function updateSimSpeed(value) {
+    sim.speedSteps = Number.isFinite(value) ? value : 1;
+    updateText(ui.simSpeed, `${sim.speedSteps}x`);
+}
+
+function togglePause() {
+    sim.paused = !sim.paused;
+    if (ui.pauseResume) {
+        ui.pauseResume.textContent = sim.paused ? "Retomar" : "Pausar";
+    }
+    updateStatusBadges();
+}
+
+function updateStatusBadges() {
+    if (ui.statusDot) {
+        ui.statusDot.dataset.state = sim.paused ? "paused" : "running";
+    }
+    if (ui.simStatus) {
+        ui.simStatus.textContent = sim.paused ? "Simulacao pausada" : "Simulacao ativa";
+    }
+    if (ui.roadBadge) {
+        ui.roadBadge.textContent = sim.paused ? "Paused" : "Live";
+    }
+    if (ui.networkBadge) {
+        ui.networkBadge.textContent = sim.showNetwork ? (sim.paused ? "Paused" : "Live") : "Off";
+    }
+}
+
+function updateText(element, value) {
+    if (!element) return;
+    const next = String(value);
+    if (element.textContent !== next) {
+        element.textContent = next;
+    }
+}
+
+function resizeCanvas(canvas, ctx) {
+    const bounds = canvas.getBoundingClientRect();
+    const width = Math.max(1, bounds.width);
+    const height = Math.max(1, bounds.height);
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    return { width, height };
+}
+
+function resizeCanvases() {
+    const previousRoad = road;
+    carCanvasSize = resizeCanvas(carCanvas, carCtx);
+    networkCanvasSize = resizeCanvas(networkCanvas, networkCtx);
+    road = new Road(carCanvasSize.width / 2, carCanvasSize.width * 0.9, CONFIG.laneCount);
+
+    if (previousRoad) {
+        realignCarsToLanes(previousRoad, road, cars);
+        realignCarsToLanes(previousRoad, road, traffic);
+    }
+}
+
+function realignCarsToLanes(previousRoad, nextRoad, list) {
+    if (!list || list.length === 0) return;
+    const laneWidth = previousRoad.width / previousRoad.laneCount;
+    list.forEach((car) => {
+        if (!car) return;
+        const laneIndex = Math.min(
+            previousRoad.laneCount - 1,
+            Math.max(0, Math.round((car.x - previousRoad.left) / laneWidth))
+        );
+        car.x = nextRoad.getLaneCenter(laneIndex);
+    });
+}
+
+function generateCars(count) {
+    const generated = [];
+    for (let i = 0; i < count; i++) {
+        generated.push(
+            new Car(road.getLaneCenter(1), 100, CONFIG.carWidth, CONFIG.carHeight, "AI")
+        );
+    }
+    return generated;
+}
+
+function generateTraffic(count) {
+    const generated = [];
+    for (let i = 0; i < count; i++) {
+        const y = -i * 600 - 100 - Math.random() * 400;
+        const lane = Math.floor(Math.random() * CONFIG.laneCount);
+        const speed = 1.5 + Math.random();
+
+        generated.push(new Car(road.getLaneCenter(lane), y, 30, 50, "DUMMY", speed));
+
+        if (Math.random() < 0.3) {
+            const lane2 = (lane + 1 + Math.floor(Math.random() * 2)) % CONFIG.laneCount;
+            generated.push(new Car(road.getLaneCenter(lane2), y, 30, 50, "DUMMY", speed));
+        }
+    }
+    return generated;
+}
+
+function loadSavedBrain() {
+    const stored = localStorage.getItem(BEST_BRAIN_KEY);
+    if (!stored) return null;
+    try {
+        return JSON.parse(stored);
+    } catch (error) {
+        return null;
+    }
+}
+
+function cloneBrain(brain) {
+    if (!brain) return null;
+    if (typeof structuredClone === "function") {
+        return structuredClone(brain);
+    }
+    return JSON.parse(JSON.stringify(brain));
+}
+
+function applySavedBrain() {
+    if (!savedBrain) return;
     for (let i = 0; i < cars.length; i++) {
-        cars[i].brain = JSON.parse(localStorage.getItem("bestBrain"));
-        if (i != 0) NeuralNetwork.mutate(cars[i].brain, 0.1);
+        cars[i].brain = cloneBrain(savedBrain);
+        if (i !== 0) NeuralNetwork.mutate(cars[i].brain, CONFIG.mutationRate);
     }
 }
-
-const traffic = [];
-const trafficCount = 50;
-
-for (let i = 0; i < trafficCount; i++) {
-    const gap = 400 + Math.random() * 400;
-    const y = -i * 600 - 100 - Math.random() * 400;
-    const lane = Math.floor(Math.random() * 3);
-    const speed = 1.5 + Math.random();
-
-    traffic.push(new Car(road.getLaneCenter(lane), y, 30, 50, "DUMMY", speed));
-
-    if (Math.random() < 0.3) {
-        const lane2 = (lane + 1 + Math.floor(Math.random())) % 3;
-        traffic.push(new Car(road.getLaneCenter(lane2), y, 30, 50, "DUMMY", speed));
-    }
-}
-
-animate();
 
 function save() {
-    localStorage.setItem("bestBrain", JSON.stringify(bestCar.brain));
+    if (!bestCar) return;
+    localStorage.setItem(BEST_BRAIN_KEY, JSON.stringify(bestCar.brain));
+    savedBrain = loadSavedBrain();
 }
 
 function discard() {
-    localStorage.removeItem("bestBrain");
+    localStorage.removeItem(BEST_BRAIN_KEY);
+    savedBrain = null;
 }
-
-function generateCars(N) {
-    const cars = [];
-    for (let i = 1; i <= N; i++)
-        cars.push(new Car(road.getLaneCenter(1), 100, 30, 50, "AI"));
-    return cars;
-}
-
-let generation = 1;
 
 function resetGeneration() {
-    generation++;
-    document.getElementById('generation').textContent = generation;
+    generation += 1;
+    updateText(ui.generation, generation);
 
-    // Reset all cars
     for (let i = 0; i < cars.length; i++) {
-        cars[i] = new Car(road.getLaneCenter(1), 100, 30, 50, "AI");
-        if (localStorage.getItem("bestBrain")) {
-            cars[i].brain = JSON.parse(localStorage.getItem("bestBrain"));
-            if (i != 0) NeuralNetwork.mutate(cars[i].brain, 0.1);
+        cars[i] = new Car(road.getLaneCenter(1), 100, CONFIG.carWidth, CONFIG.carHeight, "AI");
+        if (savedBrain) {
+            cars[i].brain = cloneBrain(savedBrain);
+            if (i !== 0) NeuralNetwork.mutate(cars[i].brain, CONFIG.mutationRate);
         }
     }
     bestCar = cars[0];
 }
 
-function animate() {
-    for (let i = 0; i < traffic.length; i++)
-        traffic[i].update(road, []);
+function stepSimulation() {
+    traffic.forEach((trafficCar) => trafficCar.update(road, []));
 
-    cars.forEach(car => car.update(road, traffic));
+    let bestFitness = -Infinity;
+    let aliveCount = 0;
+    let currentBest = bestCar || cars[0];
 
-    // Best car based on fitness
-    bestCar = cars.find(car => car.fitness == Math.max(...cars.map(c => c.fitness)));
-    if (!bestCar) bestCar = cars[0];
-
-    carCanvas.height = window.innerHeight;
-    networkCanvas.height = window.innerHeight;
-
-    carCtx.save();
-    carCtx.translate(0, -bestCar.y + carCanvas.height * 0.7);
-
-    road.draw(carCtx);
-    for (let i = 0; i < traffic.length; i++) {
-        traffic[i].draw(carCtx, "red");
+    for (let i = 0; i < cars.length; i++) {
+        const car = cars[i];
+        car.update(road, traffic);
+        if (!car.damaged) aliveCount += 1;
+        if (car.fitness > bestFitness) {
+            bestFitness = car.fitness;
+            currentBest = car;
+        }
     }
 
-    carCtx.globalAlpha = 0.2;
-    cars.forEach(car => car.draw(carCtx, "blue"));
+    bestCar = currentBest;
+    return aliveCount;
+}
 
-    carCtx.globalAlpha = 1;
-    // Draw best car solid and detailed
-    bestCar.draw(carCtx, "blue", true);
+function drawPausedOverlay() {
+    carCtx.save();
+    carCtx.fillStyle = "rgba(15, 23, 42, 0.6)";
+    carCtx.fillRect(0, 0, carCanvasSize.width, carCanvasSize.height);
+    carCtx.fillStyle = "#e2e8f0";
+    carCtx.font = "600 20px 'Space Grotesk', 'Segoe UI', sans-serif";
+    carCtx.textAlign = "center";
+    carCtx.textBaseline = "middle";
+    carCtx.fillText("Simulacao pausada", carCanvasSize.width / 2, carCanvasSize.height / 2);
+    carCtx.restore();
+}
 
+function drawNetworkPlaceholder() {
+    networkCtx.save();
+    networkCtx.fillStyle = "rgba(12, 18, 30, 0.65)";
+    networkCtx.fillRect(0, 0, networkCanvasSize.width, networkCanvasSize.height);
+    networkCtx.fillStyle = "#93a1b1";
+    networkCtx.font = "600 16px 'Space Grotesk', 'Segoe UI', sans-serif";
+    networkCtx.textAlign = "center";
+    networkCtx.textBaseline = "middle";
+    networkCtx.fillText("Network hidden", networkCanvasSize.width / 2, networkCanvasSize.height / 2);
+    networkCtx.restore();
+}
+
+function drawScene() {
+    if (!bestCar || !road) return;
+
+    carCtx.clearRect(0, 0, carCanvasSize.width, carCanvasSize.height);
+    networkCtx.clearRect(0, 0, networkCanvasSize.width, networkCanvasSize.height);
+
+    carCtx.save();
+    carCtx.translate(0, -bestCar.y + carCanvasSize.height * 0.7);
+
+    road.draw(carCtx);
+    traffic.forEach((trafficCar) => trafficCar.draw(carCtx, COLORS.traffic));
+
+    if (sim.showGhosts) {
+        carCtx.globalAlpha = 0.18;
+        cars.forEach((car) => {
+            if (car !== bestCar) car.draw(carCtx, COLORS.ghost);
+        });
+        carCtx.globalAlpha = 1;
+    }
+
+    bestCar.draw(carCtx, COLORS.best, sim.showSensors);
     carCtx.restore();
 
-    Visualizer.drawNetwork(networkCtx, bestCar.brain);
+    if (sim.paused) {
+        drawPausedOverlay();
+    }
 
-    // Update UI statistics
-    const aliveCars = cars.filter(c => !c.damaged).length;
-    const bestDist = Math.round(-bestCar.y);
+    if (sim.showNetwork) {
+        Visualizer.drawNetwork(networkCtx, bestCar.brain);
+    } else {
+        drawNetworkPlaceholder();
+    }
+}
 
-    document.getElementById('aliveCars').textContent = aliveCars;
-    document.getElementById('bestDistance').textContent = bestDist;
+function updateFps(timestamp) {
+    const delta = timestamp - lastFrameTime;
+    lastFrameTime = timestamp;
+    const current = 1000 / Math.max(1, delta);
+    smoothedFps = smoothedFps * 0.9 + current * 0.1;
+    if (timestamp - lastFpsUpdate > 250) {
+        updateText(ui.fps, Math.round(smoothedFps));
+        lastFpsUpdate = timestamp;
+    }
+}
+
+function animate(timestamp) {
+    updateFps(timestamp);
+
+    let aliveCount = cars.length;
+    if (!sim.paused) {
+        for (let step = 0; step < sim.speedSteps; step++) {
+            aliveCount = stepSimulation();
+        }
+    } else {
+        aliveCount = 0;
+        for (let i = 0; i < cars.length; i++) {
+            if (!cars[i].damaged) aliveCount += 1;
+        }
+    }
+
+    drawScene();
+
+    if (bestCar) {
+        updateText(ui.bestDistance, Math.max(0, Math.round(-bestCar.y)));
+    }
+    updateText(ui.aliveCars, aliveCount);
 
     requestAnimationFrame(animate);
 }
