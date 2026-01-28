@@ -2,7 +2,7 @@
 
 Uma simulação de carro autônomo desenvolvida completamente do zero usando JavaScript puro, sem bibliotecas externas ou frameworks de Machine Learning.
 
-![Demonstração da Simulação](screenshot.png)
+![Demonstração da Simulação](demo.gif)
 
 ## Demo ao Vivo
 
