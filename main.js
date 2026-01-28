@@ -10,7 +10,15 @@ const CONFIG = {
     laneCount: 3,
     mutationRate: 0.1,
     carWidth: 30,
-    carHeight: 50
+    carHeight: 50,
+    trafficSpeedMin: 1.2,
+    trafficSpeedMax: 2.2,
+    trafficMinGap: 260,
+    trafficGapJitter: 220,
+    startSafeDistance: 700,
+    resetTrafficOnGeneration: true,
+    autoResetOnExtinction: true,
+    extinctionDelayMs: 700
 };
 
 const COLORS = {
@@ -61,6 +69,7 @@ let lastFrameTime = performance.now();
 let smoothedFps = 60;
 let lastFpsUpdate = 0;
 let savedBrain = null;
+let extinctionTimestamp = null;
 
 init();
 
@@ -204,16 +213,26 @@ function generateCars(count) {
 
 function generateTraffic(count) {
     const generated = [];
-    for (let i = 0; i < count; i++) {
-        const y = -i * 600 - 100 - Math.random() * 400;
-        const lane = Math.floor(Math.random() * CONFIG.laneCount);
-        const speed = 1.5 + Math.random();
+    const laneOffsets = new Array(CONFIG.laneCount).fill(-CONFIG.startSafeDistance);
+    const speedRange = Math.max(0.1, CONFIG.trafficSpeedMax - CONFIG.trafficSpeedMin);
 
+    const spawnTraffic = (lane, y) => {
+        const speed = CONFIG.trafficSpeedMin + Math.random() * speedRange;
         generated.push(new Car(road.getLaneCenter(lane), y, 30, 50, "DUMMY", speed));
+    };
 
-        if (Math.random() < 0.3) {
+    for (let i = 0; i < count; i++) {
+        const lane = Math.floor(Math.random() * CONFIG.laneCount);
+        const gap = CONFIG.trafficMinGap + Math.random() * CONFIG.trafficGapJitter;
+        laneOffsets[lane] -= gap;
+        const y = laneOffsets[lane];
+        spawnTraffic(lane, y);
+
+        if (Math.random() < 0.24) {
             const lane2 = (lane + 1 + Math.floor(Math.random() * 2)) % CONFIG.laneCount;
-            generated.push(new Car(road.getLaneCenter(lane2), y, 30, 50, "DUMMY", speed));
+            const pairGap = CONFIG.trafficMinGap * 0.7 + Math.random() * (CONFIG.trafficGapJitter * 0.5);
+            laneOffsets[lane2] = Math.min(laneOffsets[lane2], y - pairGap);
+            spawnTraffic(lane2, y);
         }
     }
     return generated;
@@ -268,6 +287,9 @@ function resetGeneration() {
         }
     }
     bestCar = cars[0];
+    if (CONFIG.resetTrafficOnGeneration) {
+        traffic = generateTraffic(CONFIG.trafficCount);
+    }
 }
 
 function stepSimulation() {
@@ -372,6 +394,19 @@ function animate(timestamp) {
         aliveCount = 0;
         for (let i = 0; i < cars.length; i++) {
             if (!cars[i].damaged) aliveCount += 1;
+        }
+    }
+
+    if (!sim.paused && CONFIG.autoResetOnExtinction) {
+        if (aliveCount === 0) {
+            if (extinctionTimestamp === null) {
+                extinctionTimestamp = timestamp;
+            } else if (timestamp - extinctionTimestamp >= CONFIG.extinctionDelayMs) {
+                extinctionTimestamp = null;
+                resetGeneration();
+            }
+        } else {
+            extinctionTimestamp = null;
         }
     }
 
