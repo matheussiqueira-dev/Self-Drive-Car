@@ -1,221 +1,247 @@
-# Simulação de Carro Autônomo com JavaScript
+# Neural Drive Lab
 
-Uma simulação de carro autônomo desenvolvida completamente do zero usando JavaScript puro, sem bibliotecas externas ou frameworks de Machine Learning.
+Simulador de carro autonomo com neuroevolucao em JavaScript puro, agora com arquitetura evoluida de frontend, painel de treino avancado, historico de geracoes e API backend opcional para persistencia centralizada.
 
-![Demonstração da Simulação](demo.gif)
+## Visao Geral
 
-## Demo ao Vivo
+O projeto simula uma frota de carros controlados por rede neural aprendendo a dirigir em uma pista com trafego dinamico. A cada frame, sensores por ray-casting alimentam uma rede neural simples e o agente mais adaptado emerge por selecao natural.
 
-**Acesse a simulação rodando ao vivo:**  
-[https://matheussiqueirahub.github.io/Self-Drive-Car/](https://matheussiqueirahub.github.io/Self-Drive-Car/)
+### Objetivos de produto
 
-## Visão Geral
-
-Este projeto implementa um sistema completo de aprendizado por neuroevolução, onde 100 carros controlados por redes neurais aprendem simultaneamente a navegar por tráfego randomizado através de algoritmos genéticos.
-
-## Características Principais
-
-### Inteligência Artificial
-
-- **Rede Neural Customizada**: Implementação manual sem bibliotecas ML
-  - Arquitetura: 5 entradas → 6 neurônios ocultos → 4 saídas
-  - Propagação feedforward com ativação tanh
-  - Pesos e bias implementados manualmente
-  
-- **Algoritmo Genético**:
-  - População de 100 agentes por geração
-  - Seleção baseada em fitness multi-critério
-  - Mutação gaussiana (taxa de 10%)
-  - Persistência via localStorage
-
-- **Função de Fitness Avançada**:
-  - Recompensa por distância percorrida
-  - Penalização por desvio de faixa
-  - Penalização pesada por colisões
-  - Incentivo para direção suave
-
-### Sensores e Percepção
-
-- **Ray-casting**: 5 sensores de distância
-- **Detecção de colisão**: Baseada em polígonos
-- **Leitura de ambiente**: Bordas da pista e tráfego
-- **Visualização em tempo real**: Sensores visíveis durante operação
-
-### Simulação de Tráfego
-
-- **Geração dinâmica**: 50+ veículos com padrões randomizados
-- **Velocidades variadas**: Entre 1.5 e 2.5 unidades
-- **Posicionamento aleatório**: 3 faixas com distribuição não-determinística
-- **Obstáculos complexos**: 30% de chance de "paredes" (carros lado a lado)
-
-### Interface do Usuário
-
-- **Design moderno**: Glassmorphismo com gradientes
-- **Estatísticas em tempo real**:
-  - Contador de geração
-  - Tamanho da população
-  - Melhor distância alcançada
-  - Carros ativos (não colididos)
-  
-- **Controles**:
-  - Salvar melhor rede neural
-  - Resetar geração com mutações
-  - Deletar progresso salvo
-
-### Renderização Avançada
-
-- **Carros detalhados**: 
-  - Faróis amarelos
-  - Lanternas traseiras vermelhas
-  - Para-brisas translúcidos
-  - Rodas visíveis
-  - Rotação dinâmica baseada em ângulo
-  
-- **Pista realista**:
-  - Divisórias de faixa douradas
-  - Bordas brancas espessas
-  - Estilo de rodovia profissional
-
-- **Visualização da rede neural**:
-  - Neurônios com ativação colorida
-  - Conexões ponderadas
-  - Atualização em tempo real
-
-## Arquitetura do Código
-
-```
-├── index.html          # Estrutura HTML principal
-├── style.css           # Estilização moderna da UI
-├── main.js             # Loop de simulação e geração de tráfego
-├── car.js              # Física do carro e renderização
-├── network.js          # Implementação da rede neural
-├── sensor.js           # Sensores ray-casting
-├── road.js             # Renderização da pista
-├── controls.js         # Gerenciamento de controles
-├── utils.js            # Funções utilitárias
-└── visualizer.js       # Visualização da rede neural
-```
-
-## Tecnologias Utilizadas
-
-- **JavaScript ES6+**: Lógica principal
-- **HTML5 Canvas API**: Renderização gráfica
-- **CSS3**: Estilização moderna
-- **LocalStorage**: Persistência de dados
-
-Sem dependências externas, sem frameworks de ML, sem bibliotecas.
-
-## Como Executar
-
-1. Clone o repositório:
-```bash
-git clone https://github.com/matheussiqueirahub/Self-Drive-Car.git
-```
-
-2. Abra `index.html` em qualquer navegador moderno.
-
-3. A simulação inicia automaticamente com 100 carros aprendendo.
-
-## Fluxo de Aprendizado
-
-### Geração Inicial
-- Todos os carros possuem redes neurais com pesos aleatórios
-- Maioria colide rapidamente
-- Sistema identifica o melhor performer baseado em fitness
-
-### Evolução
-1. Usuário salva o melhor cérebro neural
-2. Reseta a geração
-3. Novos 100 carros recebem cópia do melhor cérebro com mutações
-4. Cada geração melhora progressivamente
-
-### Convergência
-- Após múltiplas gerações, carros aprendem:
-  - Manter-se centralizado na faixa
-  - Evitar colisões com tráfego
-  - Direção suave e estável
-  - Navegação de longa distância
-
-## Detalhes Técnicos
-
-### Rede Neural
-
-**Camada de Entrada** (5 neurônios):
-- Leituras dos 5 sensores ray-casting
-- Valores normalizados entre 0 e 1
-- 0 = sem obstáculo, 1 = obstáculo próximo
-
-**Camada Oculta** (6 neurônios):
-- Ativação via função tangente hiperbólica
-- Totalmente conectada com entrada e saída
-
-**Camada de Saída** (4 neurônios):
-- Controle binário: frente, ré, esquerda, direita
-- Ativação determina ação do carro
-
-### Física do Veículo
-
-- **Aceleração**: 0.2 unidades/frame
-- **Velocidade máxima**: 3 unidades
-- **Fricção**: 0.05 (desaceleração natural)
-- **Ângulo de rotação**: 0.03 radianos por input
-- **Dimensões**: 30x50 pixels
-
-### Algoritmo Genético
-
-**Seleção**: Baseada em fitness (elitismo - melhor único preservado)
-
-**Mutação**: 
-- Taxa fixa de 10%
-- Ruído gaussiano aplicado em pesos e bias
-- Mantém diversidade genética
-
-**População**: 100 agentes paralelos por geração
-
-## Persistência
-
-O melhor cérebro neural é salvo em `localStorage` do navegador. Isso significa:
-
-- Não há modelo pré-treinado no repositório
-- Ao clonar, você precisa treinar do zero
-- O progresso é local por navegador/máquina
-- Usar "Deletar Saved" reinicia completamente o aprendizado
+- Demonstrar IA aplicada em tempo real sem dependencias de ML.
+- Permitir ajustes de treino e observabilidade da simulacao.
+- Oferecer persistencia local e opcionalmente remota.
+- Manter uma interface clara, responsiva e acessivel.
 
 ## Melhorias Implementadas
 
-Este projeto evoluiu significativamente do código original:
+### Arquitetura frontend
 
-### Antes
-- 1 carro único
-- Tráfego estático e previsível
-- Renderização básica com polígonos simples
-- Interface minimalista
-- Fitness baseado apenas em distância
+- `main.js` foi refatorado para separar responsabilidades em camadas:
+  - `SafeStorage` para persistencia resiliente.
+  - `BrainStore` para salvar, importar e exportar cerebro.
+  - `RunApiClient` para integracao remota opcional.
+  - `HistoryStore` para historico local/remoto.
+  - `SimulationEngine` para regras de negocio da simulacao.
+  - `AppController` para orquestracao de UI + loop.
+- Configuracoes e limites centralizados.
+- Tratamento de erros em operacoes de storage/import/export/sync.
 
-### Depois
-- 100 carros simultâneos (paralelização massiva)
-- Tráfego dinâmico e randomizado
-- Renderização detalhada com elementos visuais
-- UI premium com glassmorphismo
-- Fitness multi-critério (distância + disciplina de faixa + sobrevivência)
+### UX/UI e Design System
 
-## Desempenho
+- Layout redesenhado com foco em hierarquia visual, legibilidade e densidade de informacao.
+- Painel de treino com:
+  - presets (`Balanced`, `Fast Learn`, `Dense Traffic`)
+  - populacao, trafego, mutacao e quantidade de faixas
+  - auto reset por extincao e auto save do melhor cerebro
+- Controles de simulacao e atalhos de teclado:
+  - `Space` pausar/retomar
+  - `R` nova geracao
+  - `S` salvar melhor cerebro
+- Historico visual de geracoes com distancia, duracao, pico de sobreviventes e motivo.
+- Melhor responsividade para desktop/tablet/mobile.
+- Melhorias de acessibilidade:
+  - labels semanticos
+  - estados visuais de foco
+  - `aria-live` para metricas dinamicas
 
-- **FPS**: 60 (estável)
-- **Carros simultâneos**: 100
-- **Tráfego**: 50+ veículos
-- **Otimização**: Canvas save/restore eficiente
+### Core de simulacao
 
-## Inspiração
+- Engine isolada da camada visual.
+- Culling basico de trafego fora da viewport para reduzir custo de render.
+- Controle de redraw da rede neural em altas velocidades para estabilidade de FPS.
+- Correcao de renderizacao de carro danificado em `car.js`.
 
-Baseado no curso "Self-Driving Car with JavaScript" disponível no YouTube, com extensivas modificações, melhorias e design customizado.
+### Backend opcional (novo)
 
-Vídeo original: https://youtu.be/Rs_rAxEsAvI
+Foi adicionada uma API REST versionada em `backend/` com:
 
-## Licença
+- `GET /api/v1/health`
+- `GET /api/v1/runs?limit=20`
+- `POST /api/v1/runs`
+- `DELETE /api/v1/runs/:id`
 
-MIT License - Livre para uso educacional e projetos pessoais.
+Com foco em producao:
+
+- validacao de payload
+- autenticacao por chave (`x-api-key`)
+- autorizacao admin para delete (`x-admin-key` opcional)
+- rate limiting em memoria
+- headers de seguranca
+- persistencia em arquivo JSON com lock de escrita
+- logging estruturado em JSON
+
+### Qualidade
+
+- Testes adicionados no backend:
+  - unitario: validador de payload
+  - integracao: criacao + leitura de runs via API
+
+## Regra de SEO/Rastreamento
+
+Nenhuma tag de analytics, pixel, script de rastreamento ou meta de indexacao foi removida/refatorada no HTML.
+
+## Stack e Tecnologias
+
+### Frontend
+
+- HTML5
+- CSS3
+- JavaScript ES2022+
+- Canvas 2D API
+- LocalStorage
+
+### Backend opcional
+
+- Node.js (HTTP nativo, sem framework)
+- Persistencia em arquivo JSON
+- `node:test` para testes
+
+## Estrutura do Projeto
+
+```text
+.
+├── index.html
+├── style.css
+├── main.js
+├── car.js
+├── controls.js
+├── network.js
+├── road.js
+├── sensor.js
+├── utils.js
+├── visualizer.js
+├── backend/
+│   ├── package.json
+│   ├── data/
+│   │   ├── .gitignore
+│   │   └── .gitkeep
+│   ├── src/
+│   │   ├── config.js
+│   │   ├── index.js
+│   │   ├── logger.js
+│   │   ├── rateLimiter.js
+│   │   ├── runRepository.js
+│   │   ├── server.js
+│   │   └── validator.js
+│   └── tests/
+│       ├── server.test.js
+│       └── validator.test.js
+└── README.md
+```
+
+## Como Executar
+
+### Frontend (simples)
+
+1. Abra `index.html` no navegador.
+2. A simulacao inicia automaticamente.
+
+### Frontend (servidor local recomendado)
+
+```bash
+# Exemplo com Python
+python -m http.server 5500
+# abrir http://localhost:5500
+```
+
+## Backend Opcional
+
+### Instalar e iniciar
+
+```bash
+cd backend
+npm install
+npm start
+```
+
+Servidor padrao: `http://localhost:8787`
+
+### Variaveis de ambiente
+
+- `HOST` (padrao: `0.0.0.0`)
+- `PORT` (padrao: `8787`)
+- `DATA_FILE` (padrao: `backend/data/runs.json`)
+- `API_KEY` (opcional, protege GET/POST)
+- `ADMIN_KEY` (opcional, protege DELETE)
+- `ALLOWED_ORIGIN` (padrao: `*`)
+- `RATE_LIMIT_WINDOW_MS` (padrao: `60000`)
+- `RATE_LIMIT_MAX` (padrao: `120`)
+- `MAX_BODY_BYTES` (padrao: `65536`)
+- `MAX_RUNS` (padrao: `1000`)
+
+### Exemplo de uso da API
+
+```bash
+# Health
+curl http://localhost:8787/api/v1/health
+
+# Criar run
+curl -X POST http://localhost:8787/api/v1/runs \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: SUA_CHAVE" \
+  -d '{
+    "generation": 5,
+    "bestDistance": 1120,
+    "averageFitness": 87.3,
+    "alivePeak": 100,
+    "durationMs": 38000,
+    "reason": "manual",
+    "endedAt": "2026-02-09T12:00:00.000Z",
+    "config": {
+      "population": 100,
+      "trafficCount": 50,
+      "mutationRate": 0.1,
+      "laneCount": 3
+    }
+  }'
+
+# Listar runs
+curl "http://localhost:8787/api/v1/runs?limit=10" -H "x-api-key: SUA_CHAVE"
+```
+
+## Testes
+
+Executar testes do backend:
+
+```bash
+cd backend
+npm test
+```
+
+## Deploy
+
+### Frontend
+
+- Pode ser publicado em GitHub Pages, Netlify, Vercel (modo estatico).
+
+### Backend
+
+- Pode ser executado em VPS, Render, Fly.io ou Railway.
+- Recomenda-se configurar:
+  - `API_KEY` forte
+  - `ADMIN_KEY` diferente da `API_KEY`
+  - `ALLOWED_ORIGIN` especifico
+  - monitoramento de logs
+
+## Boas Praticas Adotadas
+
+- Separacao de responsabilidades (engine, estado, integracao e UI).
+- Validacao defensiva de entrada.
+- Persistencia resiliente com fallback local.
+- Controle de erro e feedback visual ao usuario.
+- Headers de seguranca e rate limit na API.
+- Testes automatizados para confiabilidade.
+
+## Possiveis Melhorias Futuras
+
+- Persistencia em banco relacional/documento (PostgreSQL/MongoDB).
+- Dashboard analitico com comparacao entre configuracoes de treino.
+- Replay deterministico de geracoes.
+- Telemetria de performance por frame (CPU/GPU timing).
+- Modo multiplayer de benchmark entre cerebros.
 
 ---
 
-Desenvolvido como demonstração de aprendizado profundo de conceitos de redes neurais, algoritmos genéticos e renderização em tempo real.
+Autoria: Matheus Siqueira  
+Website: https://www.matheussiqueira.dev/

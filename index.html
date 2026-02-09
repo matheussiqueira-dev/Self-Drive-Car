@@ -9,117 +9,201 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <main class="app-shell">
-        <section id="controlPanel" class="panel" aria-label="Painel de controle">
-            <div class="panel-header">
-                <span class="eyebrow">Autonomous Lab</span>
-                <h1>Neural Drive</h1>
-                <p class="panel-subtitle">Simulação evolutiva em tempo real.</p>
-                <div class="chip-row">
-                    <span class="chip">Neuroevolution</span>
-                    <span class="chip">Canvas 2D</span>
+    <main class="dashboard" aria-label="Painel principal da simulacao">
+        <aside id="controlPanel" class="control-panel" aria-label="Painel de controle">
+            <header class="panel-top">
+                <p class="kicker">Autonomous Research Console</p>
+                <h1>Neural Drive Lab</h1>
+                <p class="subtitle">Treinamento evolutivo em tempo real para carros autonomos com visualizacao de rede neural.</p>
+                <div class="tag-row" role="list" aria-label="Tecnologias">
+                    <span class="tag" role="listitem">Neuroevolution</span>
+                    <span class="tag" role="listitem">Canvas 2D</span>
+                    <span class="tag" role="listitem">Zero Dependencies</span>
                 </div>
-            </div>
+            </header>
 
-            <div class="stats-grid" aria-live="polite">
-                <div class="stat-item">
-                    <span class="stat-label">Geração</span>
-                    <span class="stat-value" id="generation">1</span>
+            <section class="panel-section" aria-labelledby="statsTitle">
+                <div class="section-head">
+                    <h2 id="statsTitle">Metricas ao vivo</h2>
+                    <span class="section-note">Atualizacao continua</span>
                 </div>
-
-                <div class="stat-item">
-                    <span class="stat-label">População</span>
-                    <span class="stat-value" id="population">100</span>
+                <div class="stats-grid" aria-live="polite" aria-atomic="false">
+                    <article class="stat-item">
+                        <p class="stat-label">Geracao</p>
+                        <p class="stat-value" id="generation">1</p>
+                    </article>
+                    <article class="stat-item">
+                        <p class="stat-label">Populacao</p>
+                        <p class="stat-value" id="population">100</p>
+                    </article>
+                    <article class="stat-item emphasis">
+                        <p class="stat-label">Melhor distancia</p>
+                        <p class="stat-value" id="bestDistance">0 m</p>
+                    </article>
+                    <article class="stat-item">
+                        <p class="stat-label">Carros ativos</p>
+                        <p class="stat-value" id="aliveCars">100</p>
+                    </article>
+                    <article class="stat-item">
+                        <p class="stat-label">FPS</p>
+                        <p class="stat-value" id="fps">60</p>
+                    </article>
+                    <article class="stat-item">
+                        <p class="stat-label">Velocidade</p>
+                        <p class="stat-value" id="simSpeed">1x</p>
+                    </article>
                 </div>
+            </section>
 
-                <div class="stat-item emphasis">
-                    <span class="stat-label">Melhor distância</span>
-                    <div class="stat-inline">
-                        <span class="stat-value" id="bestDistance">0</span>
-                        <span class="stat-unit">m</span>
-                    </div>
+            <section class="panel-section" aria-labelledby="displayTitle">
+                <div class="section-head">
+                    <h2 id="displayTitle">Visualizacao</h2>
                 </div>
-
-                <div class="stat-item">
-                    <span class="stat-label">Carros ativos</span>
-                    <span class="stat-value" id="aliveCars">100</span>
-                </div>
-
-                <div class="stat-item">
-                    <span class="stat-label">FPS</span>
-                    <span class="stat-value" id="fps">60</span>
-                </div>
-
-                <div class="stat-item">
-                    <span class="stat-label">Velocidade</span>
-                    <span class="stat-value" id="simSpeed">1x</span>
-                </div>
-            </div>
-
-            <div class="controls-group">
-                <div class="control-row toggles">
-                    <label class="toggle">
-                        <input type="checkbox" id="toggleSensors" checked>
+                <div class="toggle-grid">
+                    <label class="toggle-item" for="toggleSensors">
                         <span>Mostrar sensores</span>
+                        <input type="checkbox" id="toggleSensors" checked>
                     </label>
-                    <label class="toggle">
-                        <input type="checkbox" id="toggleGhosts" checked>
+                    <label class="toggle-item" for="toggleGhosts">
                         <span>Mostrar frota</span>
+                        <input type="checkbox" id="toggleGhosts" checked>
                     </label>
-                    <label class="toggle">
+                    <label class="toggle-item" for="toggleNetwork">
+                        <span>Mostrar rede neural</span>
                         <input type="checkbox" id="toggleNetwork" checked>
-                        <span>Mostrar rede</span>
                     </label>
-                </div>
-
-                <div class="control-row">
-                    <label for="speedSelect">Ritmo da simulação</label>
-                    <div class="select">
+                    <label class="field" for="speedSelect">
+                        <span>Ritmo de simulacao</span>
                         <select id="speedSelect">
-                            <option value="1" selected>1x (Real)</option>
+                            <option value="1" selected>1x (tempo real)</option>
                             <option value="2">2x</option>
                             <option value="4">4x</option>
+                            <option value="8">8x</option>
                         </select>
-                    </div>
+                    </label>
                 </div>
-            </div>
+            </section>
 
-            <div class="button-group">
-                <button class="primary" id="saveBrain" type="button">Salvar melhor cérebro</button>
-                <button class="secondary" id="resetGeneration" type="button">Nova geração</button>
-                <button class="ghost" id="pauseResume" type="button">Pausar</button>
-                <button class="danger" id="discardBrain" type="button">Excluir salvo</button>
-            </div>
+            <section class="panel-section" aria-labelledby="trainingTitle">
+                <div class="section-head">
+                    <h2 id="trainingTitle">Configuracao de treino</h2>
+                    <span class="section-note">Aplicacao por geracao</span>
+                </div>
 
-            <div class="panel-footer">
-                <span class="status-dot" id="statusDot" data-state="running"></span>
-                <span id="simStatus">Simulação ativa</span>
-            </div>
-        </section>
+                <div class="preset-row" role="group" aria-label="Presets de treino">
+                    <button class="preset" type="button" data-preset="balanced">Balanced</button>
+                    <button class="preset" type="button" data-preset="fast">Fast Learn</button>
+                    <button class="preset" type="button" data-preset="dense">Dense Traffic</button>
+                </div>
 
-        <section class="canvas-card" data-surface="road">
-            <div class="canvas-header">
+                <div class="field-grid" role="group" aria-label="Parametros principais">
+                    <label class="field" for="populationInput">
+                        <span>Populacao (20-300)</span>
+                        <input id="populationInput" type="number" min="20" max="300" step="10" value="100">
+                    </label>
+                    <label class="field" for="trafficInput">
+                        <span>Trafego (10-200)</span>
+                        <input id="trafficInput" type="number" min="10" max="200" step="5" value="50">
+                    </label>
+                    <label class="field" for="mutationInput">
+                        <span>Mutacao (0.01-0.5)</span>
+                        <input id="mutationInput" type="number" min="0.01" max="0.5" step="0.01" value="0.1">
+                    </label>
+                    <label class="field" for="lanesInput">
+                        <span>Faixas (2-5)</span>
+                        <input id="lanesInput" type="number" min="2" max="5" step="1" value="3">
+                    </label>
+                </div>
+
+                <div class="toggle-row">
+                    <label class="toggle-item" for="autoResetToggle">
+                        <span>Auto reset em extincao</span>
+                        <input type="checkbox" id="autoResetToggle" checked>
+                    </label>
+                    <label class="toggle-item" for="autoSaveToggle">
+                        <span>Auto salvar melhor cerebro</span>
+                        <input type="checkbox" id="autoSaveToggle">
+                    </label>
+                </div>
+
+                <button class="action secondary" id="applySettings" type="button">Aplicar parametros</button>
+            </section>
+
+            <section class="panel-section" aria-labelledby="brainTitle">
+                <div class="section-head">
+                    <h2 id="brainTitle">Controle da IA</h2>
+                </div>
+                <div class="button-grid">
+                    <button class="action primary" id="saveBrain" type="button">Salvar melhor cerebro</button>
+                    <button class="action secondary" id="resetGeneration" type="button">Nova geracao</button>
+                    <button class="action ghost" id="pauseResume" type="button">Pausar</button>
+                    <button class="action ghost" id="exportBrain" type="button">Exportar cerebro</button>
+                    <button class="action ghost" id="importBrain" type="button">Importar cerebro</button>
+                    <button class="action danger" id="discardBrain" type="button">Excluir salvo</button>
+                </div>
+            </section>
+
+            <section class="panel-section" aria-labelledby="integrationTitle">
+                <div class="section-head">
+                    <h2 id="integrationTitle">API opcional</h2>
+                    <span class="section-note">Persistencia externa</span>
+                </div>
+
+                <div class="field-grid single-column">
+                    <label class="field" for="apiBaseUrl">
+                        <span>Base URL (ex: http://localhost:8787)</span>
+                        <input id="apiBaseUrl" type="url" placeholder="http://localhost:8787">
+                    </label>
+                    <label class="field" for="apiKey">
+                        <span>API key (opcional)</span>
+                        <input id="apiKey" type="password" placeholder="x-api-key">
+                    </label>
+                </div>
+
+                <div class="button-row">
+                    <button class="action secondary" id="syncHistory" type="button">Sincronizar historico</button>
+                </div>
+            </section>
+
+            <section class="panel-section" aria-labelledby="historyTitle">
+                <div class="section-head">
+                    <h2 id="historyTitle">Historico de geracoes</h2>
+                    <span class="section-note" id="historySummary">Sem dados ainda</span>
+                </div>
+                <ol class="history-list" id="historyList" aria-live="polite"></ol>
+            </section>
+
+            <footer class="panel-footer">
+                <span class="status-dot" id="statusDot" data-state="running" aria-hidden="true"></span>
+                <p id="simStatus">Simulacao ativa</p>
+            </footer>
+        </aside>
+
+        <section class="canvas-stage" data-surface="road" aria-label="Visao da pista">
+            <header class="canvas-header">
                 <div>
                     <p class="canvas-title">Road View</p>
-                    <p class="canvas-subtitle">Foco no melhor carro</p>
+                    <p class="canvas-subtitle">Foco no carro lider</p>
                 </div>
-                <span class="badge" id="roadBadge">Live</span>
-            </div>
-            <canvas id="carCanvas" aria-label="Simulação da pista"></canvas>
+                <span class="live-badge" id="roadBadge">Live</span>
+            </header>
+            <canvas id="carCanvas" aria-label="Canvas da simulacao da pista"></canvas>
         </section>
 
-        <section class="canvas-card" data-surface="network">
-            <div class="canvas-header">
+        <section class="canvas-stage" data-surface="network" aria-label="Visao da rede neural">
+            <header class="canvas-header">
                 <div>
                     <p class="canvas-title">Neural Map</p>
-                    <p class="canvas-subtitle">Pesos e ativações</p>
+                    <p class="canvas-subtitle">Pesos, ativacoes e decisao</p>
                 </div>
-                <span class="badge" id="networkBadge">Live</span>
-            </div>
-            <canvas id="networkCanvas" aria-label="Visualização da rede neural"></canvas>
+                <span class="live-badge" id="networkBadge">Live</span>
+            </header>
+            <canvas id="networkCanvas" aria-label="Canvas da rede neural"></canvas>
         </section>
     </main>
-    
+
+    <input type="file" id="importBrainFile" accept="application/json" hidden>
+
     <script src="visualizer.js"></script>
     <script src="network.js"></script>
     <script src="sensor.js"></script>
