@@ -9,6 +9,7 @@ module.exports = [
       ecmaVersion: 2022,
       sourceType: "commonjs",
       globals: {
+        // Node.js CommonJS globals
         process: "readonly",
         console: "readonly",
         Buffer: "readonly",
@@ -18,10 +19,22 @@ module.exports = [
         clearTimeout: "readonly",
         setInterval: "readonly",
         clearInterval: "readonly",
+        require: "readonly",
+        module: "writable",
+        exports: "writable",
+        __dirname: "readonly",
+        __filename: "readonly",
       },
     },
     rules: {
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "no-unused-vars": [
+        "error",
+        {
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
       "no-console": "off",
       eqeqeq: ["error", "always"],
       curly: ["error", "all"],
@@ -29,16 +42,6 @@ module.exports = [
       "no-var": "error",
       "object-shorthand": "error",
       "no-throw-literal": "error",
-    },
-  },
-  {
-    files: ["tests/**/*.js"],
-    languageOptions: {
-      globals: {
-        require: "readonly",
-        module: "readonly",
-        __dirname: "readonly",
-      },
     },
   },
   {
