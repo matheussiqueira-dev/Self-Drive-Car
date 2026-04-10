@@ -1,0 +1,19 @@
+{
+  "name": "Neural Drive Lab",
+  "description": "Self-driving car simulator with neuroevolution — vanilla JS, Canvas 2D, zero ML dependencies.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Matheus Siqueira",
+    "website": "https://www.matheussiqueira.dev/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/matheussiqueira-dev/Self-Drive-Car"
+  },
+  "license": "MIT",
+  "tags": ["neuroevolution", "canvas2d", "self-driving", "neural-network", "javascript", "simulation"],
+  "stack": {
+    "frontend": ["HTML5", "CSS3", "JavaScript ES2022+", "Canvas 2D API", "LocalStorage"],
+    "backend": ["Node.js", "HTTP native", "JSON file storage"]
+  }
+}
