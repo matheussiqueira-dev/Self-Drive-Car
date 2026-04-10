@@ -31,7 +31,7 @@ async function cleanup(filePath) {
 }
 
 test("init creates file if missing", async () => {
-  const { repo, filePath } = await makeRepo();
+  const { filePath } = await makeRepo();
   try {
     const content = JSON.parse(await fs.readFile(filePath, "utf8"));
     assert.ok(Array.isArray(content));
