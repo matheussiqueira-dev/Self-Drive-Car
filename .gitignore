@@ -3,6 +3,11 @@
 # Dependencies
 node_modules/
 
+# Build outputs
+dist/
+coverage/
+backend/coverage/
+
 # IDE
 .vscode/
 .idea/

@@ -3,6 +3,9 @@
 node_modules/
 backend/node_modules/
 backend/data/
+coverage/
+backend/coverage/
+dist/
 *.min.js
 demo.gif
 screenshot.png

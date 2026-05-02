@@ -1,0 +1,48 @@
+{
+  "name": "neural-drive-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-driving car simulator powered by neuroevolution, Canvas 2D, and an optional Node.js backend.",
+  "author": "Matheus Siqueira (www.matheussiqueira.dev)",
+  "license": "MIT",
+  "homepage": "https://matheussiqueira-dev.github.io/Self-Drive-Car/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matheussiqueira-dev/Self-Drive-Car.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matheussiqueira-dev/Self-Drive-Car/issues"
+  },
+  "keywords": [
+    "self-driving-car",
+    "neuroevolution",
+    "canvas",
+    "simulation",
+    "neural-network"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "npm run serve",
+    "serve": "npx --yes serve .",
+    "ci": "npm run backend:ci",
+    "verify": "npm run ci",
+    "test": "npm run backend:test",
+    "test:coverage": "npm run backend:test:coverage",
+    "lint": "npm run backend:lint",
+    "lint:fix": "npm run backend:lint:fix",
+    "format": "npm run backend:format",
+    "format:check": "npm run backend:format:check",
+    "backend:install": "npm --prefix backend install",
+    "backend:start": "npm --prefix backend start",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:test": "npm --prefix backend test",
+    "backend:test:coverage": "npm --prefix backend run test:coverage",
+    "backend:lint": "npm --prefix backend run lint",
+    "backend:lint:fix": "npm --prefix backend run lint:fix",
+    "backend:format": "npm --prefix backend run fmt",
+    "backend:format:check": "npm --prefix backend run fmt:check",
+    "backend:ci": "npm --prefix backend run ci"
+  }
+}

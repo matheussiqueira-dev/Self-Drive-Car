@@ -17,10 +17,6 @@ jobs:
       matrix:
         node-version: ["20", "22"]
 
-    defaults:
-      run:
-        working-directory: backend
-
     steps:
       - uses: actions/checkout@v4
 
@@ -32,13 +28,7 @@ jobs:
           cache-dependency-path: "backend/package-lock.json"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm --prefix backend ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Check formatting
-        run: npm run fmt:check
-
-      - name: Run tests
-        run: npm test
+      - name: Run backend quality gate
+        run: npm run backend:ci

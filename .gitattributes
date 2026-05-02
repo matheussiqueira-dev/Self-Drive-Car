@@ -1,0 +1,9 @@
+# Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+
+* text=auto eol=lf
+
+*.gif binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
