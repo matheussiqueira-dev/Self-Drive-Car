@@ -45,23 +45,34 @@ class SimulationEngine {
 
   step(timestamp) {
     this.traffic.forEach((t) => t.update(this.road, []));
-    let bestFit = -Infinity,
+    let bestAliveFit = -Infinity,
+      bestFallbackFit = -Infinity,
       avg = 0,
       alive = 0,
-      leader = this.bestCar || this.cars[0];
+      aliveLeader = null,
+      fallbackLeader = this.bestCar || this.cars[0];
 
     for (let i = 0; i < this.cars.length; i++) {
       const car = this.cars[i];
       car.update(this.road, this.traffic);
-      if (!car.damaged) alive++;
+
       avg += car.fitness;
-      if (car.fitness > bestFit) {
-        bestFit = car.fitness;
-        leader = car;
+
+      if (car.fitness > bestFallbackFit) {
+        bestFallbackFit = car.fitness;
+        fallbackLeader = car;
+      }
+
+      if (!car.damaged) {
+        alive++;
+        if (car.fitness > bestAliveFit) {
+          bestAliveFit = car.fitness;
+          aliveLeader = car;
+        }
       }
     }
 
-    this.bestCar = leader || this.bestCar;
+    this.bestCar = aliveLeader || fallbackLeader || this.bestCar;
     this.aliveCars = alive;
     this.peakAlive = Math.max(this.peakAlive, alive);
     this.averageFitness = this.cars.length ? avg / this.cars.length : 0;
