@@ -2,6 +2,7 @@
   "name": "Neural Drive Lab",
   "description": "Self-driving car simulator with neuroevolution — vanilla JS, Canvas 2D, zero ML dependencies.",
   "version": "1.0.0",
+  "credits": "Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev",
   "author": {
     "name": "Matheus Siqueira",
     "website": "https://www.matheussiqueira.dev/"

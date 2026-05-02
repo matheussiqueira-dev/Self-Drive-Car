@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 class Road {
     constructor(x, width, laneCount = 3) {
         this.x = x;

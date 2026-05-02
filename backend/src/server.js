@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 const http = require("http");
 const crypto = require("crypto");
 const { loadConfig } = require("./config");

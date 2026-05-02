@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 const path = require("path");
 
 function toInt(value, fallback) {

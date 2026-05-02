@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 class Controls {
     constructor(type) {
         this.forward = false;

@@ -1,3 +1,5 @@
+# Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+
 .DEFAULT_GOAL := help
 
 BACKEND_DIR := backend

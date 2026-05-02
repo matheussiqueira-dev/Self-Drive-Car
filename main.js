@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 const carCanvas=document.getElementById("carCanvas");
 const networkCanvas=document.getElementById("networkCanvas");
 if(!carCanvas||!networkCanvas) throw new Error("Canvas elements not found");

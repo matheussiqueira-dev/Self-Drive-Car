@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 class Car {
     constructor(x, y, width, height, controlType, maxSpeed = 3) {
         this.x = x;

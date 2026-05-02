@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 class RateLimiter {
   constructor({ windowMs, max }) {
     this.windowMs = windowMs;

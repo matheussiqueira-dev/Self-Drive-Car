@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 const ALLOWED_REASONS = new Set(["manual", "extinction", "settings", "brain-import"]);
 
 function asNumber(value) {

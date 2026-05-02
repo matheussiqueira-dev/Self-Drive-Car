@@ -1,3 +1,5 @@
+> Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+
 # Neural Drive Lab
 
 [![CI](https://github.com/matheussiqueira-dev/Self-Drive-Car/actions/workflows/ci.yml/badge.svg)](https://github.com/matheussiqueira-dev/Self-Drive-Car/actions/workflows/ci.yml)

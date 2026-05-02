@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 const { createServer } = require("./server");
 const logger = require("./logger");
 

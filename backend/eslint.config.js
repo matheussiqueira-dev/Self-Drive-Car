@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 const js = require("@eslint/js");
 
 /** @type {import("eslint").Linter.Config[]} */

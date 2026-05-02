@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { RateLimiter } = require("../src/rateLimiter");

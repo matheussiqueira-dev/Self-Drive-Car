@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 class NeuralNetwork {
     constructor(neuronCounts) {
         this.levels = [];

@@ -1,3 +1,5 @@
+> Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+
 # Como Ativar o GitHub Pages
 
 ## Passos para Configuração

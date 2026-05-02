@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 function lerp(A, B, t) {
     return A + (B - A) * t;
 }

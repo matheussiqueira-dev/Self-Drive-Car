@@ -1,3 +1,7 @@
+/*
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Syne:wght@500;600;700&display=swap');
 
 :root {
@@ -423,16 +427,34 @@ body::before {
 
 .panel-footer {
     margin-top: 4px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: grid;
+    gap: 8px;
     color: var(--text-soft);
     font-size: 0.85rem;
     min-height: 20px;
 }
 
+.status-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .panel-footer p {
     margin: 0;
+}
+
+.author-credit {
+    line-height: 1.35;
+}
+
+.author-credit a {
+    color: var(--accent-cold);
+    text-decoration: none;
+}
+
+.author-credit a:hover {
+    text-decoration: underline;
 }
 
 .status-dot {

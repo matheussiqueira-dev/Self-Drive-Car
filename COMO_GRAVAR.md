@@ -1,3 +1,5 @@
+> Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+
 # 🎥 Como Gravar a Demonstração
 
 ## Método Mais Simples: Windows Game Bar

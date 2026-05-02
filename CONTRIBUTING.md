@@ -1,3 +1,5 @@
+> Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+
 # Contributing to Neural Drive Lab
 
 Thank you for your interest in contributing!

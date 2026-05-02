@@ -1,3 +1,7 @@
+/**
+ * Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+ */
+
 class Visualizer{
     static drawNetwork(ctx,network){
         const margin=50;
