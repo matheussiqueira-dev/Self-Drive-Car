@@ -58,6 +58,11 @@ function parseRunPayload(payload) {
     errors.push("endedAt must be a valid ISO date");
   }
 
+  const providedId = typeof payload.id === "string" ? payload.id.trim() : "";
+  if (providedId && !/^[a-zA-Z0-9_-]{1,80}$/.test(providedId)) {
+    errors.push("id may contain only letters, numbers, underscores, and hyphens");
+  }
+
   const config = payload.config;
   if (!config || typeof config !== "object") {
     errors.push("config must be an object");
@@ -94,8 +99,8 @@ function parseRunPayload(payload) {
     ok: true,
     value: {
       id:
-        typeof payload.id === "string" && payload.id.trim().length > 0
-          ? payload.id.trim().slice(0, 80)
+        providedId.length > 0
+          ? providedId
           : `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
       generation,
       bestDistance,

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Neural Drive Lab">
+  <rect width="512" height="512" rx="96" fill="#090d13"/>
+  <path d="M128 360 205 116h102l77 244h-76l-12-46h-80l-12 46h-76Z" fill="#4fd0ff"/>
+  <path d="M230 256h52l-26-96-26 96Z" fill="#090d13"/>
+  <path d="M144 390c76 42 148 42 224 0" fill="none" stroke="#ffab4b" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="160" cy="172" r="18" fill="#4ce09b"/>
+  <circle cx="352" cy="172" r="18" fill="#4ce09b"/>
+</svg>

@@ -1,0 +1,12 @@
+# Desenvolvido por Matheus Siqueira - www.matheussiqueira.dev
+
+.git/
+.vercel/
+.github/
+node_modules/
+backend/node_modules/
+backend/data/
+coverage/
+backend/coverage/
+demo.gif
+*.log

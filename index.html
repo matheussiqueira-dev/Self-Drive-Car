@@ -4,12 +4,81 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Neural Drive Lab e um simulador profissional de self-driving car com neuroevolucao, sensores por ray-casting, trafego dinamico, dashboard inteligente e deploy estatico na Vercel."
+    />
+    <meta name="author" content="Matheus Siqueira" />
+    <meta name="theme-color" content="#090d13" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://self-drive-car.vercel.app/" />
     <title>Neural Drive Lab | Self-Driving Car</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Neural Drive Lab | Self-Driving Car" />
+    <meta
+      property="og:description"
+      content="Simulador de carro autonomo com Canvas 2D, neuroevolucao, dashboard inteligente e arquitetura estatica pronta para Vercel."
+    />
+    <meta property="og:url" content="https://self-drive-car.vercel.app/" />
+    <meta property="og:site_name" content="Neural Drive Lab" />
+    <meta property="og:image" content="https://self-drive-car.vercel.app/screenshot.png" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Neural Drive Lab | Self-Driving Car" />
+    <meta
+      name="twitter:description"
+      content="Self-driving car simulator com IA evolutiva, ray-casting, metricas em tempo real e deploy profissional."
+    />
+    <meta name="twitter:image" content="https://self-drive-car.vercel.app/screenshot.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
+    <link rel="apple-touch-icon" href="assets/icon-maskable.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="style.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Neural Drive Lab",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "url": "https://self-drive-car.vercel.app/",
+        "image": "https://self-drive-car.vercel.app/screenshot.png",
+        "description": "Simulador de self-driving car com neuroevolucao, Canvas 2D, sensores por ray-casting, trafego dinamico e dashboard inteligente.",
+        "author": {
+          "@type": "Person",
+          "name": "Matheus Siqueira",
+          "url": "https://www.matheussiqueira.dev",
+          "sameAs": ["https://www.linkedin.com/in/matheussiqueira-dev"]
+        },
+        "programmingLanguage": "JavaScript"
+      }
+    </script>
   </head>
   <body>
+    <header class="app-topbar" aria-label="Navegacao principal">
+      <a class="brand-mark" href="#controlPanel" aria-label="Ir para o simulador">
+        <span aria-hidden="true">ND</span>
+        <strong>Neural Drive Lab</strong>
+      </a>
+      <nav class="topnav" aria-label="Secoes do produto">
+        <a href="#controlPanel">Simulador</a>
+        <a href="#smartDashboardTitle">Dashboard</a>
+        <a href="#aboutProject">Sobre</a>
+        <a href="#deployNotes">Deploy</a>
+      </nav>
+      <a
+        class="profile-link"
+        href="https://www.matheussiqueira.dev"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Matheus Siqueira
+      </a>
+    </header>
+
     <main class="dashboard" aria-label="Painel principal da simulacao">
       <aside id="controlPanel" class="control-panel" aria-label="Painel de controle">
         <header class="panel-top">
@@ -24,6 +93,12 @@
             <span class="tag" role="listitem">Canvas 2D</span>
             <span class="tag" role="listitem">Zero Dependencies</span>
           </div>
+          <p class="top-credit">
+            Desenvolvido por Matheus Siqueira
+            <a href="https://www.matheussiqueira.dev" target="_blank" rel="noreferrer"
+              >www.matheussiqueira.dev</a
+            >
+          </p>
         </header>
 
         <section class="panel-section" aria-labelledby="statsTitle">
@@ -56,7 +131,68 @@
               <p class="stat-label">Velocidade</p>
               <p class="stat-value" id="simSpeed">1x</p>
             </article>
+            <article class="stat-item">
+              <p class="stat-label">Colisoes</p>
+              <p class="stat-value" id="collisionCount">0</p>
+            </article>
+            <article class="stat-item">
+              <p class="stat-label">Risco IA</p>
+              <p class="stat-value risk-value" id="riskStatus">Clear</p>
+            </article>
+            <article class="stat-item">
+              <p class="stat-label">Tempo vivo medio</p>
+              <p class="stat-value" id="averageAlive">0s</p>
+            </article>
+            <article class="stat-item">
+              <p class="stat-label">Melhor fitness</p>
+              <p class="stat-value" id="bestFitness">0</p>
+            </article>
           </div>
+        </section>
+
+        <section class="panel-section intelligence-panel" aria-labelledby="smartDashboardTitle">
+          <div class="section-head">
+            <h2 id="smartDashboardTitle">Dashboard inteligente</h2>
+            <span class="section-note" id="smartDashboardState">Analise local</span>
+          </div>
+
+          <div class="insight-kpis" aria-live="polite" aria-atomic="false">
+            <article class="smart-kpi">
+              <p class="stat-label">Evolucao</p>
+              <p class="stat-value compact" id="trendScore">--</p>
+              <span id="trendDelta">Aguardando historico</span>
+            </article>
+            <article class="smart-kpi">
+              <p class="stat-label">Sobrevivencia</p>
+              <p class="stat-value compact" id="survivalRate">100%</p>
+              <span id="survivalHint">Frota completa</span>
+            </article>
+            <article class="smart-kpi">
+              <p class="stat-label">Fitness medio</p>
+              <p class="stat-value compact" id="avgFitness">0</p>
+              <span id="fitnessHint">Treino inicial</span>
+            </article>
+            <article class="smart-kpi">
+              <p class="stat-label">Melhor run</p>
+              <p class="stat-value compact" id="bestRun">0 m</p>
+              <span id="bestRunHint">Sessao atual</span>
+            </article>
+          </div>
+
+          <div class="trend-shell">
+            <div
+              class="trend-chart"
+              id="trendChart"
+              role="img"
+              aria-label="Grafico de tendencia das ultimas geracoes"
+            >
+              <span class="chart-empty">Finalize uma geracao para iniciar a curva.</span>
+            </div>
+          </div>
+
+          <ul class="insight-list" id="insightList" aria-live="polite">
+            <li class="insight-item muted">Coletando sinais da simulacao.</li>
+          </ul>
         </section>
 
         <section class="panel-section" aria-labelledby="displayTitle">
@@ -229,6 +365,49 @@
       </section>
     </main>
 
+    <section class="product-info" id="aboutProject" aria-labelledby="aboutTitle">
+      <div class="product-copy">
+        <p class="kicker">Portfolio Product</p>
+        <h2 id="aboutTitle">Simulacao autonoma com arquitetura pronta para evoluir</h2>
+        <p>
+          O Neural Drive Lab combina fisica veicular simplificada, ray-casting, neuroevolucao,
+          persistencia opcional e dashboards analiticos em uma experiencia estatica preparada para
+          Vercel.
+        </p>
+      </div>
+      <div class="product-grid" role="list">
+        <article role="listitem">
+          <span>01</span>
+          <h3>IA evolutiva</h3>
+          <p>Rede neural leve, mutacao controlada, historico de runs e exportacao de cerebro.</p>
+        </article>
+        <article role="listitem">
+          <span>02</span>
+          <h3>Observabilidade</h3>
+          <p>Eventos de UX, Web Vitals basicos, erros globais e hooks para analytics externos.</p>
+        </article>
+        <article role="listitem" id="deployNotes">
+          <span>03</span>
+          <h3>Deploy estatico</h3>
+          <p>
+            Build em <code>dist/</code>, headers de seguranca, PWA e backend opcional desacoplado.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="site-footer" aria-label="Creditos profissionais">
+      <p>
+        Desenvolvido por Matheus Siqueira -
+        <a href="https://www.matheussiqueira.dev" target="_blank" rel="noreferrer">
+          www.matheussiqueira.dev
+        </a>
+      </p>
+      <a href="https://www.linkedin.com/in/matheussiqueira-dev" target="_blank" rel="noreferrer">
+        LinkedIn
+      </a>
+    </footer>
+
     <input type="file" id="importBrainFile" accept="application/json" hidden />
 
     <script src="utils.js"></script>
@@ -237,10 +416,13 @@
     <script src="sensor.js"></script>
     <script src="road.js"></script>
     <script src="controls.js"></script>
+    <script src="drivingSafety.js"></script>
     <script src="car.js"></script>
     <script src="appConfig.js"></script>
     <script src="persistence.js"></script>
     <script src="simulationEngine.js"></script>
+    <script src="analytics.js"></script>
+    <script src="pwa.js"></script>
     <script src="main.js"></script>
   </body>
 </html>

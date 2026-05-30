@@ -1,0 +1,36 @@
+{
+  "name": "Neural Drive Lab",
+  "short_name": "Neural Drive",
+  "description": "Self-driving car simulator with neuroevolution, Canvas 2D and intelligent analytics.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090d13",
+  "theme_color": "#090d13",
+  "categories": ["education", "developer", "simulation"],
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Neural Drive Lab dashboard and simulation"
+    }
+  ]
+}

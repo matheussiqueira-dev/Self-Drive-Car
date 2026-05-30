@@ -7,21 +7,28 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-green)](backend/package.json)
 
-> Self-driving car simulator powered by neuroevolution -- vanilla JS, Canvas 2D, zero ML dependencies.
+> Self-driving car simulator powered by neuroevolution, deterministic safety controls, and a professional product shell -- vanilla JS, Canvas 2D, zero ML dependencies.
 
 ![Neural Drive Lab demo](demo.gif)
 
 ## Live Demo
+
+**Vercel:** https://self-drive-car.vercel.app/
 
 **GitHub Pages:** https://matheussiqueira-dev.github.io/Self-Drive-Car/
 
 ## Overview
 
 A fleet of cars controlled by small neural networks learns to navigate a road
-with dynamic traffic. At every frame, a ray-casting sensor feeds distances to
-a fully-connected network; the output maps to forward / left / right / reverse.
-Natural selection (fitness = distance - lane-deviation penalty) drives
-evolution across generations.
+with dynamic traffic. At every frame, a 9-ray sensor feeds normalized distances
+to a fully-connected network. A deterministic safety layer then removes unsafe
+commands, prevents incoherent steering, avoids reverse during autonomous
+driving, reacts to critical front obstacles, and keeps the lead car stable
+inside the lane.
+
+Natural selection rewards distance, survival, lane discipline, smooth steering,
+and successful traffic passing while strongly penalizing collisions, reverse
+movement, idle behavior, and unsafe proximity.
 
 ### Architecture
 
@@ -30,15 +37,18 @@ Browser
   |
   +-- AppController (main.js)
         |
-        +-- SimulationEngine  -- generation loop, traffic, culling
+        +-- SimulationEngine  -- generation loop, traffic, culling, elitism
         |     +-- Car[]       -- physics, ray sensors, fitness
         |     |     +-- RaySensor  -- ray-casting intersection
+        |     |     +-- DrivingSafety  -- hybrid safety controller
         |     |     +-- NeuralNetwork  -- feedforward + clone + mutate
         |     +-- Road        -- lane geometry, borders
         +-- SafeStorage       -- resilient localStorage wrapper
         +-- BrainStore        -- save / load / import / export
         +-- HistoryStore      -- local + optional remote
         +-- RunApiClient      -- optional backend integration
+        +-- Analytics         -- Vercel/GA-ready event adapter
+        +-- PWA runtime       -- manifest + service worker registration
         +-- Visualizer        -- neural network canvas renderer
 
 Optional Backend (Node.js, no framework)
@@ -51,12 +61,27 @@ Optional Backend (Node.js, no framework)
 
 ## Stack
 
-| Layer | Technologies |
-|---|---|
-| Frontend | HTML5, CSS3, JavaScript ES2022+, Canvas 2D, LocalStorage |
-| Backend | Node.js >= 20, HTTP native, JSON file storage |
-| Tests | node:test (built-in, no dependencies) |
-| CI | GitHub Actions (Node 20 + 22 matrix) |
+| Layer    | Technologies                                                  |
+| -------- | ------------------------------------------------------------- |
+| Frontend | HTML5, CSS3, JavaScript ES2022+, Canvas 2D, LocalStorage, PWA |
+| Backend  | Node.js >= 20, HTTP native, JSON file storage                 |
+| Tests    | node:test for frontend simulation logic and backend API       |
+| Deploy   | Vercel static output (`dist/`) and GitHub Pages               |
+| CI       | Static build + backend quality gate on Node 20 + 22           |
+
+## Product Features
+
+- Hybrid autonomous driving: neural network intent + deterministic safety layer.
+- Professional simulation dashboard with KPIs, risk status, generation history,
+  best fitness, collisions, average alive time, and training presets.
+- Progressive traffic generation with safe initial spacing and realistic gaps.
+- PWA support with manifest, install metadata, offline fallback, and service worker.
+- SEO package: canonical URL, Open Graph, Twitter Card, robots.txt, sitemap.xml,
+  and SoftwareApplication structured data.
+- Analytics-ready architecture for Vercel Analytics, Google Analytics, and custom
+  event tracking without requiring secrets for the static simulator.
+- Permanent professional credits:
+  [Desenvolvido por Matheus Siqueira](https://www.matheussiqueira.dev/).
 
 ## Project Structure
 
@@ -67,11 +92,22 @@ Optional Backend (Node.js, no framework)
 +-- main.js             AppController + SimulationEngine
 +-- car.js              Car physics, sensor, fitness, rendering
 +-- controls.js         Keyboard and AI output mapping
++-- drivingSafety.js    Hybrid safety layer for AI decisions
 +-- network.js          NeuralNetwork + Level (clone, mutate, feedforward)
 +-- sensor.js           RaySensor -- ray-casting
 +-- road.js             Road geometry and lane centers
 +-- utils.js            lerp, getIntersection, polysIntersect, getRGBA
 +-- visualizer.js       Neural network canvas renderer
++-- analytics.js        Event adapter for Vercel/GA/custom telemetry
++-- pwa.js              Service worker registration
++-- service-worker.js   Offline cache strategy
++-- manifest.webmanifest
++-- robots.txt
++-- sitemap.xml
++-- scripts/
+    +-- build-static-site.js
++-- tests/
+    +-- frontend.test.js
 +-- metadata.json       Machine-readable project card
 +-- backend/
     +-- package.json
@@ -94,25 +130,41 @@ Optional Backend (Node.js, no framework)
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-|---|---|
-| Space | Pause / Resume |
-| R | New generation |
-| S | Save best brain |
+| Key   | Action          |
+| ----- | --------------- |
+| Space | Pause / Resume  |
+| R     | New generation  |
+| S     | Save best brain |
 
 ## Quick Start
 
-### Frontend (no install)
+### Frontend
 
 ```bash
-# Python
-python -m http.server 5500
+npm install
+npm run start
+```
 
-# Node
-npx serve .
+Open the local URL printed by `serve` and press play.
+
+### Static fallback
+
+```bash
+python -m http.server 5500
 ```
 
 Open http://localhost:5500 and press play.
+
+### Production build
+
+```bash
+npm install
+npm run build
+npm run preview
+```
+
+The build command validates required static assets and professional credits,
+then writes the deployable site to `dist/`.
 
 ## Backend (optional)
 
@@ -131,18 +183,18 @@ Default: `http://localhost:8787`
 
 ### Environment variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `HOST` | `0.0.0.0` | Bind address |
-| `PORT` | `8787` | Listen port |
-| `DATA_FILE` | `backend/data/runs.json` | Storage path |
-| `API_KEY` | *(empty)* | Protects GET + POST (optional) |
-| `ADMIN_KEY` | *(empty)* | Protects DELETE (optional) |
-| `ALLOWED_ORIGIN` | `*` | CORS origin |
-| `RATE_LIMIT_WINDOW_MS` | `60000` | Rate-limit window |
-| `RATE_LIMIT_MAX` | `120` | Max requests per window |
-| `MAX_BODY_BYTES` | `65536` | Request body cap |
-| `MAX_RUNS` | `1000` | Max stored runs |
+| Variable               | Default                  | Description                    |
+| ---------------------- | ------------------------ | ------------------------------ |
+| `HOST`                 | `0.0.0.0`                | Bind address                   |
+| `PORT`                 | `8787`                   | Listen port                    |
+| `DATA_FILE`            | `backend/data/runs.json` | Storage path                   |
+| `API_KEY`              | _(empty)_                | Protects GET + POST (optional) |
+| `ADMIN_KEY`            | _(empty)_                | Protects DELETE (optional)     |
+| `ALLOWED_ORIGIN`       | `*`                      | CORS origin                    |
+| `RATE_LIMIT_WINDOW_MS` | `60000`                  | Rate-limit window              |
+| `RATE_LIMIT_MAX`       | `120`                    | Max requests per window        |
+| `MAX_BODY_BYTES`       | `65536`                  | Request body cap               |
+| `MAX_RUNS`             | `1000`                   | Max stored runs                |
 
 ### API endpoints
 
@@ -190,10 +242,28 @@ make help              # print all targets
 ## Tests
 
 ```bash
-cd backend
-npm test               # run all tests (node:test, no deps)
-npm run test:coverage  # with coverage report
+npm test               # frontend simulation tests + backend tests
+npm run verify         # build + frontend tests + backend CI
+npm run test:coverage  # backend coverage report
 ```
+
+Frontend tests cover polygon intersection, collision detection, sensor readings
+against traffic and road borders, safe traffic generation, neural-network
+clone/mutation behavior, safety-layer command sanitization, and elite brain
+preservation.
+
+## PWA, SEO and Observability
+
+- `manifest.webmanifest` defines installable app metadata and icons.
+- `service-worker.js` caches the static shell and serves `offline.html` as a
+  graceful fallback.
+- `robots.txt`, `sitemap.xml`, canonical URL, social cards, and JSON-LD metadata
+  are included in the static build.
+- `analytics.js` exposes `window.AppTelemetry.track(...)` and automatically
+  forwards events to Vercel Analytics (`window.va`) or Google Analytics
+  (`window.gtag`) when either tool is installed.
+- The frontend does not require environment variables. The optional backend can
+  be enabled later through `window.NDL_CONFIG.apiBaseUrl` and API keys.
 
 ## Security
 
@@ -206,15 +276,33 @@ npm run test:coverage  # with coverage report
 
 ## Deployment
 
-### Frontend
+### Frontend on Vercel
 
-GitHub Pages, Netlify, Vercel, or any static host.
+The project includes `vercel.json` for a production static deployment:
+
+- Framework preset: `Other` (`framework: null`)
+- Build command: `npm run build`
+- Output directory: `dist`
+- Security headers: CSP, frame protection, content-type hardening, referrer policy
+
+Deploy with Git integration or the CLI:
+
+```bash
+npm run ci
+npx vercel deploy --prod --project self-drive-car
+```
 
 ### Backend
 
 VPS, Render, Fly.io, Railway, or any Node.js host.
 
+The optional API uses local JSON file storage, which is appropriate for a
+persistent Node.js host. For Vercel Functions, replace `RunRepository` with a
+durable store such as Vercel Blob, Postgres, Redis, or another managed database
+before treating remote run history as production-persistent.
+
 Production checklist:
+
 - Set strong, unique `API_KEY` and `ADMIN_KEY`
 - Set `ALLOWED_ORIGIN` to your frontend domain
 - Mount `DATA_FILE` on persistent storage

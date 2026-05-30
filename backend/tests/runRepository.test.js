@@ -124,6 +124,21 @@ test("enforces maxRuns cap", async () => {
   }
 });
 
+test("create replaces an existing run with the same id", async () => {
+  const { repo, filePath } = await makeRepo();
+  try {
+    await repo.create(makeRun("same-id", new Date(Date.now() - 5000).toISOString()));
+    await repo.create({ ...makeRun("same-id"), bestDistance: 900 });
+
+    const list = await repo.list(10);
+    assert.equal(list.length, 1);
+    assert.equal(list[0].id, "same-id");
+    assert.equal(list[0].bestDistance, 900);
+  } finally {
+    await cleanup(filePath);
+  }
+});
+
 test("concurrent writes do not corrupt file", async () => {
   const { repo, filePath } = await makeRepo();
   try {

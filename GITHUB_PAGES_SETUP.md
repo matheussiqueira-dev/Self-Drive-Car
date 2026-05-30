@@ -5,7 +5,7 @@
 ## Passos para Configuração
 
 1. **Acesse as configurações do repositório:**
-   https://github.com/matheussiqueirahub/Self-Drive-Car/settings/pages
+   https://github.com/matheussiqueira-dev/Self-Drive-Car/settings/pages
 
 2. **Configure o Source:**
    - Na seção "Build and deployment"
@@ -13,13 +13,13 @@
    - (NÃO selecione "Deploy from a branch")
 
 3. **Aguarde o Deploy:**
-   - Vá para a aba "Actions": https://github.com/matheussiqueirahub/Self-Drive-Car/actions
+   - Vá para a aba "Actions": https://github.com/matheussiqueira-dev/Self-Drive-Car/actions
    - Você verá o workflow "Deploy to GitHub Pages" rodando
    - Aguarde completar (ícone verde de check)
 
 4. **Acesse o site:**
    - Após o workflow completar, seu site estará em:
-   - https://matheussiqueirahub.github.io/Self-Drive-Car/
+   - https://matheussiqueira-dev.github.io/Self-Drive-Car/
 
 ## Troubleshooting
 

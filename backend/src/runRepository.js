@@ -33,8 +33,9 @@ class RunRepository {
   async create(run) {
     return this.#withLock(async () => {
       const current = await this.#readAll();
-      current.unshift(run);
-      const next = current.slice(0, this.maxRuns);
+      const withoutDuplicate = current.filter((entry) => entry.id !== run.id);
+      withoutDuplicate.unshift(run);
+      const next = withoutDuplicate.slice(0, this.maxRuns);
       await this.#writeAll(next);
       return run;
     });

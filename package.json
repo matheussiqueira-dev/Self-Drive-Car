@@ -24,11 +24,15 @@
     "node": ">=20"
   },
   "scripts": {
+    "dev": "npm run serve",
     "start": "npm run serve",
     "serve": "npx --yes serve .",
-    "ci": "npm run backend:ci",
+    "build": "node scripts/build-static-site.js",
+    "preview": "npx --yes serve dist",
+    "ci": "npm run build && npm run test:frontend && npm run backend:ci",
     "verify": "npm run ci",
-    "test": "npm run backend:test",
+    "test": "npm run test:frontend && npm run backend:test",
+    "test:frontend": "node --test tests/*.test.js",
     "test:coverage": "npm run backend:test:coverage",
     "lint": "npm run backend:lint",
     "lint:fix": "npm run backend:lint:fix",

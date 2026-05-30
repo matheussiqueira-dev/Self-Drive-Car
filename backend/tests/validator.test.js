@@ -128,3 +128,9 @@ test("uses provided id when valid", () => {
   assert.equal(result.ok, true);
   assert.equal(result.value.id, "custom-id-123");
 });
+
+test("rejects ids that cannot be deleted by the API route", () => {
+  const result = parseRunPayload({ ...baseRun(), id: "bad/id" });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((e) => e.includes("id")));
+});

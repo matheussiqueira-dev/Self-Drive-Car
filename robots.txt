@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://self-drive-car.vercel.app/sitemap.xml

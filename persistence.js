@@ -172,6 +172,13 @@ class HistoryStore {
       .slice(0, limit);
   }
 
+  getRecent(limit = 8) {
+    return this.entries
+      .slice()
+      .sort((a, b) => new Date(b.endedAt).getTime() - new Date(a.endedAt).getTime())
+      .slice(0, limit);
+  }
+
   summary() {
     const best = this.getTop(1)[0];
     return best
@@ -222,7 +229,10 @@ class HistoryStore {
         generation: Number(e.generation) || 0,
         bestDistance: Number(e.bestDistance) || 0,
         averageFitness: Number(e.averageFitness) || 0,
+        bestFitness: Number(e.bestFitness) || 0,
         alivePeak: Number(e.alivePeak) || 0,
+        collisions: Number(e.collisions) || 0,
+        averageAliveFrames: Number(e.averageAliveFrames) || 0,
         durationMs: Number(e.durationMs) || 0,
         reason: String(e.reason ?? "manual"),
         endedAt: e.endedAt || new Date().toISOString(),

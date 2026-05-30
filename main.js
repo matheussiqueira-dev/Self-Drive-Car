@@ -16,12 +16,27 @@ const ui = {
   aliveCars: document.getElementById("aliveCars"),
   fps: document.getElementById("fps"),
   simSpeed: document.getElementById("simSpeed"),
+  collisionCount: document.getElementById("collisionCount"),
+  riskStatus: document.getElementById("riskStatus"),
+  averageAlive: document.getElementById("averageAlive"),
+  bestFitness: document.getElementById("bestFitness"),
   simStatus: document.getElementById("simStatus"),
   statusDot: document.getElementById("statusDot"),
   roadBadge: document.getElementById("roadBadge"),
   networkBadge: document.getElementById("networkBadge"),
   historyList: document.getElementById("historyList"),
   historySummary: document.getElementById("historySummary"),
+  smartDashboardState: document.getElementById("smartDashboardState"),
+  trendScore: document.getElementById("trendScore"),
+  trendDelta: document.getElementById("trendDelta"),
+  survivalRate: document.getElementById("survivalRate"),
+  survivalHint: document.getElementById("survivalHint"),
+  avgFitness: document.getElementById("avgFitness"),
+  fitnessHint: document.getElementById("fitnessHint"),
+  bestRun: document.getElementById("bestRun"),
+  bestRunHint: document.getElementById("bestRunHint"),
+  trendChart: document.getElementById("trendChart"),
+  insightList: document.getElementById("insightList"),
   saveBrain: document.getElementById("saveBrain"),
   resetGeneration: document.getElementById("resetGeneration"),
   discardBrain: document.getElementById("discardBrain"),
@@ -75,6 +90,11 @@ class AppController {
     this.statusOverrideUntil = 0;
     this.networkTick = 0;
     this.lastDrawnBrain = null;
+    this.smartDashboard = {
+      lastUpdate: 0,
+      syncState: "ready",
+      syncMessage: "Analise local",
+    };
   }
 
   init() {
@@ -86,7 +106,13 @@ class AppController {
     updateText(ui.generation, this.engine.generation);
     this.#updateSimSpeed(this.sim.speedSteps);
     this.#renderHistory();
+    this.#renderSmartDashboard(this.engine.aliveCars);
     this.#refreshStatus("Simulacao ativa", "running");
+    this.#track("simulation_initialized", {
+      population: this.config.population,
+      trafficCount: this.config.trafficCount,
+      laneCount: this.config.laneCount,
+    });
     requestAnimationFrame((ts) => this.#animate(ts));
   }
   #bindEvents() {
@@ -109,6 +135,7 @@ class AppController {
       if (!file) return;
       try {
         this.savedBrain = await this.brainStore.importFile(file);
+        this.#track("brain_imported", { fileName: file.name });
         this.#setTransientStatus("Cerebro importado", "running", 2400);
         this.#advanceGeneration("brain-import");
       } catch {
@@ -246,6 +273,7 @@ class AppController {
     if (ui.lanesInput) ui.lanesInput.value = String(p.laneCount);
     if (ui.autoResetToggle) ui.autoResetToggle.checked = p.autoResetOnExtinction;
     this.#applySettingsFromForm();
+    this.#track("training_preset_applied", { name });
     this.#setTransientStatus(`Preset ${name} aplicado`, "running", 2200);
   }
 
@@ -284,6 +312,7 @@ class AppController {
     this.#resizeCanvases();
     this.#advanceGeneration("settings");
     updateText(ui.population, this.config.population);
+    this.#track("training_settings_applied", next);
     this.#setTransientStatus("Parametros aplicados", "running", 2200);
   }
 
@@ -303,12 +332,14 @@ class AppController {
       return;
     }
     this.savedBrain = this.brainStore.save(best);
+    this.#track("brain_saved", { generation: this.engine.generation });
     this.#setTransientStatus("Melhor cerebro salvo", "running", 2200);
   }
 
   #discardBrain() {
     this.savedBrain = null;
     this.brainStore.clear();
+    this.#track("brain_discarded");
     this.#setTransientStatus("Cerebro salvo removido", "running", 2200);
   }
 
@@ -327,6 +358,11 @@ class AppController {
       this.historyStore.add(report);
       this.#renderHistory();
       if (this.apiClient.hasEndpoint) this.apiClient.createRun(report).catch(() => {});
+      this.#track("generation_completed", {
+        generation: report.generation,
+        bestDistance: report.bestDistance,
+        reason: report.reason,
+      });
     }
 
     updateText(ui.generation, this.engine.generation);
@@ -341,21 +377,36 @@ class AppController {
     });
     this.#persistApiConfig();
     if (!this.apiClient.hasEndpoint) {
+      this.smartDashboard.syncState = "error";
+      this.smartDashboard.syncMessage = "API nao configurada";
+      this.#renderSmartDashboard(this.engine.aliveCars);
       this.#setTransientStatus("Informe uma API URL valida", "error", 2800);
       return;
     }
 
+    this.smartDashboard.syncState = "loading";
+    this.smartDashboard.syncMessage = "Sincronizando";
+    this.#renderSmartDashboard(this.engine.aliveCars);
     this.#setTransientStatus("Sincronizando historico...", "syncing", 3200);
+    if (ui.syncHistory) ui.syncHistory.disabled = true;
     try {
       const result = await this.historyStore.syncRemote(12);
       this.#renderHistory();
+      this.smartDashboard.syncState = "ready";
+      this.smartDashboard.syncMessage = "Historico sincronizado";
+      this.#track("history_synced", result);
       this.#setTransientStatus(
         `Sync concluido: ${result.synced} enviados, ${result.merged} recebidos`,
         "running",
         3200
       );
     } catch {
+      this.smartDashboard.syncState = "error";
+      this.smartDashboard.syncMessage = "Falha no sync";
       this.#setTransientStatus("Falha na sincronizacao", "error", 3200);
+    } finally {
+      if (ui.syncHistory) ui.syncHistory.disabled = false;
+      this.#renderSmartDashboard(this.engine.aliveCars);
     }
   }
   #renderHistory() {
@@ -369,6 +420,7 @@ class AppController {
       empty.textContent = "Nenhuma geracao encerrada ainda.";
       ui.historyList.appendChild(empty);
       updateText(ui.historySummary, this.historyStore.summary());
+      this.#renderSmartDashboard(this.engine.aliveCars);
       return;
     }
 
@@ -401,6 +453,180 @@ class AppController {
     });
 
     updateText(ui.historySummary, this.historyStore.summary());
+    this.#renderSmartDashboard(this.engine.aliveCars);
+  }
+
+  #renderSmartDashboard(alive) {
+    const recent = this.historyStore.getRecent(8);
+    const latest = recent[0] || null;
+    const previous = recent[1] || null;
+    const bestHistorical = this.historyStore.getTop(1)[0] || null;
+    const currentBest = this.engine.bestDistance || 0;
+    const bestDistance = Math.max(bestHistorical?.bestDistance || 0, currentBest);
+    const survivalRate = this.config.population
+      ? Math.round((alive / this.config.population) * 100)
+      : 0;
+    const averageFitness = Math.round(this.engine.averageFitness || 0);
+    const trendPct =
+      latest && previous && previous.bestDistance > 0
+        ? ((latest.bestDistance - previous.bestDistance) / previous.bestDistance) * 100
+        : null;
+
+    const trendLabel =
+      trendPct === null
+        ? currentBest > 0
+          ? fmtDist(currentBest)
+          : "--"
+        : `${trendPct >= 0 ? "+" : ""}${Math.round(trendPct)}%`;
+
+    updateText(ui.smartDashboardState, this.smartDashboard.syncMessage);
+    if (ui.smartDashboardState) {
+      ui.smartDashboardState.dataset.state = this.smartDashboard.syncState;
+    }
+    updateText(ui.trendScore, trendLabel);
+    updateText(
+      ui.trendDelta,
+      trendPct === null
+        ? recent.length
+          ? "Comparativo em formacao"
+          : "Aguardando historico"
+        : `vs G${previous.generation}`
+    );
+    updateText(ui.survivalRate, `${survivalRate}%`);
+    updateText(
+      ui.survivalHint,
+      survivalRate >= 70
+        ? "Frota saudavel"
+        : survivalRate >= 25
+          ? "Acompanhar colisao"
+          : "Risco alto"
+    );
+    updateText(ui.avgFitness, averageFitness);
+    updateText(
+      ui.fitnessHint,
+      averageFitness >= 0 ? "Trajetoria produtiva" : "Penalidade por colisao/faixa"
+    );
+    updateText(ui.bestRun, fmtDist(bestDistance));
+    updateText(
+      ui.bestRunHint,
+      bestHistorical ? `G${bestHistorical.generation} no historico` : "Sessao atual"
+    );
+
+    this.#renderTrendChart(recent, currentBest);
+    this.#renderInsights({ recent, latest, previous, trendPct, survivalRate, averageFitness });
+  }
+
+  #renderTrendChart(recent, currentBest) {
+    if (!ui.trendChart) return;
+    ui.trendChart.innerHTML = "";
+    const points = recent.slice().reverse();
+    if (points.length === 0 && currentBest > 0) {
+      points.push({ generation: "Live", bestDistance: currentBest });
+    }
+
+    if (points.length === 0) {
+      const empty = document.createElement("span");
+      empty.className = "chart-empty";
+      empty.textContent = "Finalize uma geracao para iniciar a curva.";
+      ui.trendChart.appendChild(empty);
+      ui.trendChart.setAttribute("aria-label", "Sem dados historicos suficientes");
+      return;
+    }
+
+    const maxDistance = Math.max(...points.map((point) => point.bestDistance), 1);
+    points.forEach((point) => {
+      const bar = document.createElement("span");
+      bar.className = "trend-bar";
+      const height = Math.max(8, (point.bestDistance / maxDistance) * 100);
+      bar.style.setProperty("--bar-height", `${height}%`);
+      const pointLabel = point.generation === "Live" ? "Live" : `G${point.generation}`;
+      bar.title = `${pointLabel}: ${fmtDist(point.bestDistance)}`;
+
+      const value = document.createElement("strong");
+      value.textContent = fmtDist(point.bestDistance);
+      const label = document.createElement("em");
+      label.textContent = pointLabel;
+      bar.appendChild(value);
+      bar.appendChild(label);
+      ui.trendChart.appendChild(bar);
+    });
+    ui.trendChart.setAttribute(
+      "aria-label",
+      `Tendencia com ${points.length} ponto(s), melhor valor ${fmtDist(maxDistance)}`
+    );
+  }
+
+  #renderInsights({ recent, latest, previous, trendPct, survivalRate, averageFitness }) {
+    if (!ui.insightList) return;
+    ui.insightList.innerHTML = "";
+    const insights = [];
+
+    if (this.smartDashboard.syncState === "loading") {
+      insights.push({
+        tone: "info",
+        text: "Sincronizando historico remoto sem bloquear o treino.",
+      });
+    } else if (this.smartDashboard.syncState === "error") {
+      insights.push({
+        tone: "warning",
+        text: "API opcional indisponivel; o historico local segue preservado no navegador.",
+      });
+    }
+
+    if (recent.length < 2) {
+      insights.push({
+        tone: "info",
+        text: "Finalize ao menos duas geracoes para liberar comparativos de tendencia.",
+      });
+    } else if (trendPct > 8) {
+      insights.push({
+        tone: "good",
+        text: "A evolucao esta positiva; mantenha os parametros atuais por mais uma rodada.",
+      });
+    } else if (trendPct < -8) {
+      insights.push({
+        tone: "warning",
+        text: "Queda relevante na ultima geracao; reduza trafego ou aumente mutacao gradualmente.",
+      });
+    } else {
+      insights.push({
+        tone: "info",
+        text: "Treino estavel; observe se o fitness medio acompanha o melhor percurso.",
+      });
+    }
+
+    if (survivalRate < 20) {
+      insights.push({
+        tone: "warning",
+        text: "Sobrevivencia baixa: experimente diminuir densidade de trafego nesta configuracao.",
+      });
+    } else if (survivalRate > 75 && latest?.bestDistance > previous?.bestDistance) {
+      insights.push({
+        tone: "good",
+        text: "Frota preservada e distancia subindo indicam bom equilibrio exploracao/seguranca.",
+      });
+    }
+
+    if (averageFitness < -150) {
+      insights.push({
+        tone: "warning",
+        text: "Fitness medio negativo sugere colisao precoce ou desvio de faixa recorrente.",
+      });
+    }
+
+    if (this.config.mutationRate >= 0.18) {
+      insights.push({
+        tone: "info",
+        text: "Mutacao alta acelera exploracao, mas pode reduzir consistencia entre geracoes.",
+      });
+    }
+
+    insights.slice(0, 4).forEach((insight) => {
+      const item = document.createElement("li");
+      item.className = `insight-item ${insight.tone}`;
+      item.textContent = insight.text;
+      ui.insightList.appendChild(item);
+    });
   }
 
   #resizeCanvases() {
@@ -453,9 +679,20 @@ class AppController {
     updateText(ui.aliveCars, alive);
     updateText(ui.bestDistance, fmtDist(this.engine.bestDistance));
     updateText(ui.generation, this.engine.generation);
+    updateText(ui.collisionCount, this.engine.collisionCount);
+    updateText(ui.riskStatus, this.engine.bestCar?.riskStatus ?? "clear");
+    updateText(ui.averageAlive, `${Math.round(this.engine.averageAliveFrames / 60)}s`);
+    updateText(ui.bestFitness, Math.round(this.engine.bestFitness));
     this.#refreshStatus(this.#statusMessage(), this.#statusState());
+    this.#updateSmartDashboard(ts, alive);
 
     requestAnimationFrame((next) => this.#animate(next));
+  }
+
+  #updateSmartDashboard(ts, alive) {
+    if (ts - this.smartDashboard.lastUpdate < 500) return;
+    this.smartDashboard.lastUpdate = ts;
+    this.#renderSmartDashboard(alive);
   }
 
   #drawScene() {
@@ -463,7 +700,6 @@ class AppController {
     if (!best || !this.engine.road) return;
 
     carCtx.clearRect(0, 0, this.carCanvasSize.width, this.carCanvasSize.height);
-    networkCtx.clearRect(0, 0, this.networkCanvasSize.width, this.networkCanvasSize.height);
 
     carCtx.save();
     carCtx.translate(0, -best.y + this.carCanvasSize.height * 0.72);
@@ -496,6 +732,7 @@ class AppController {
     this.networkTick++;
     const skip = this.sim.speedSteps >= 4 ? 2 : 1;
     if (this.networkTick % skip === 0 || this.lastDrawnBrain !== best.brain) {
+      networkCtx.clearRect(0, 0, this.networkCanvasSize.width, this.networkCanvasSize.height);
       Visualizer.drawNetwork(networkCtx, best.brain);
       this.lastDrawnBrain = best.brain;
     }
@@ -556,6 +793,10 @@ class AppController {
           ? "Paused"
           : "Live"
         : "Off";
+  }
+
+  #track(name, data = {}) {
+    window.NeuralDriveAnalytics?.track(name, data);
   }
 }
 

@@ -2,6 +2,7 @@
 
 # Dependencies
 node_modules/
+.vercel/
 
 # Build outputs
 dist/

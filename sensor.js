@@ -5,12 +5,15 @@
 class RaySensor {
   constructor(car) {
     this.car = car;
-    this.rayCount = 5;
-    this.rayLength = 150;
-    this.raySpread = Math.PI / 2; // degrees in radian
+    this.rayAngles = [-70, -42, -24, -12, 0, 12, 24, 42, 70].map(
+      (degrees) => (degrees * Math.PI) / 180
+    );
+    this.rayCount = this.rayAngles.length;
+    this.rayLength = 260;
 
     this.rays = [];
     this.readings = [];
+    this.inputs = new Array(this.rayCount).fill(0);
   }
 
   update(roadBorders, traffic) {
@@ -19,6 +22,13 @@ class RaySensor {
     for (let i = 0; i < this.rays.length; i++) {
       this.readings.push(this.#getReading(this.rays[i], roadBorders, traffic));
     }
+    this.inputs = this.readings.map((reading) =>
+      reading == null ? 0 : Number((1 - reading.offset).toFixed(4))
+    );
+  }
+
+  getNetworkInputs() {
+    return this.inputs.slice();
   }
 
   #getReading(ray, roadBorders, traffic) {
@@ -48,12 +58,7 @@ class RaySensor {
   #castRays() {
     this.rays = [];
     for (let i = 0; i < this.rayCount; i++) {
-      const rayAngle =
-        lerp(
-          this.raySpread / 2,
-          -this.raySpread / 2,
-          this.rayCount === 1 ? 0.5 : i / (this.rayCount - 1)
-        ) + this.car.angle;
+      const rayAngle = this.rayAngles[i] + this.car.angle;
       const start = { x: this.car.x, y: this.car.y };
       const end = {
         x: this.car.x - Math.sin(rayAngle) * this.rayLength,
@@ -79,7 +84,7 @@ class RaySensor {
       ctx.lineTo(end.x, end.y);
       ctx.stroke();
 
-      ctx.beginPath(); //just to see where the line would've been if not intersecting
+      ctx.beginPath();
       ctx.lineWidth = 2;
       ctx.strokeStyle = "black";
       ctx.moveTo(rayEnd.x, rayEnd.y);

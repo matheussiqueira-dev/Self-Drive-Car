@@ -18,6 +18,30 @@ class NeuralNetwork {
     return outputs;
   }
 
+  static createBaseline(inputCount) {
+    const network = new NeuralNetwork([inputCount, 8, 4]);
+    const hidden = network.levels[0];
+    const output = network.levels[1];
+
+    hidden.biases = hidden.biases.map(() => -0.2);
+    hidden.weights = hidden.weights.map((row) => row.map(() => 0.08));
+
+    output.biases = [-0.1, 1.35, 1.35, 1.8];
+    output.weights = output.weights.map((row) => row.map(() => 0));
+    for (let i = 0; i < output.weights.length; i++) {
+      output.weights[i][0] = 0.18;
+    }
+
+    return network;
+  }
+
+  static isCompatible(network, inputCount, outputCount = 4) {
+    if (!network?.levels?.length) return false;
+    const first = network.levels[0];
+    const last = network.levels[network.levels.length - 1];
+    return first.inputs.length === inputCount && last.outputs.length === outputCount;
+  }
+
   /**
    * Deep-clone a NeuralNetwork, preserving all weights and biases.
    * Used during elitist selection to copy the best brain without
