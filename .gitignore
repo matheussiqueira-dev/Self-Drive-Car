@@ -24,3 +24,7 @@ Thumbs.db
 
 # Temporary files
 *.tmp
+
+# Local tooling state
+.claude/
+.cto-toolkit/
